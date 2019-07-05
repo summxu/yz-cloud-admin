@@ -116,7 +116,7 @@ export const asyncRoutes = [
     meta: {
       title: '角色权限',
       icon: 'lock',
-      roles: ['admin', 'editor'] // you can set roles in root nav
+      roles: ['admin', 'editor']
     },
     children: [
       {
@@ -125,7 +125,7 @@ export const asyncRoutes = [
         name: 'RolePermission',
         meta: {
           title: '角色管理',
-          roles: ['admin']
+          roles: ['editor']
         }
       },
       {
@@ -136,8 +136,7 @@ export const asyncRoutes = [
           title: '管理员管理'
           // if do not set roles, means: this page does not require permission
         }
-      },
-
+      }
     ]
   },
 

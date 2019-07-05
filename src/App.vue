@@ -11,11 +11,11 @@ export default {
 </script>
 
 <style>
-body /deep/ .el-table th.gutter {
+body .el-table th.gutter {
   display: table-cell !important;
 }
 
-body /deep/ .el-table colgroup.gutter {
+body .el-table colgroup.gutter {
   display: table-cell !important;
 }
 </style>

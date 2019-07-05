@@ -208,8 +208,31 @@ export const asyncRoutes = [
         component: () => import('@/views/system-manage/site-option'),
         name: 'site-option',
         meta: { title: '网站设置', affix: true }
-      }
-
+      },
+      {
+        path: 'system-manage/demand',
+        component: () => import('@/views/system-manage/demand'),
+        name: 'demand',
+        meta: { title: '需求类型管理', affix: true }
+      },
+      {
+        path: 'system-manage/admin-log',
+        component: () => import('@/views/system-manage/admin-log'),
+        name: 'admin-log',
+        meta: { title: '管理员日志', affix: true }
+      },
+      {
+        path: 'system-manage/url',
+        component: () => import('@/views/system-manage/url'),
+        name: 'url',
+        meta: { title: '快捷URL管理', affix: true }
+      },
+      {
+        path: 'system-manage/url-classify',
+        component: () => import('@/views/system-manage/url-classify'),
+        name: 'url-classify',
+        meta: { title: '快捷URL分类管理', affix: true }
+      },
     ]
   },
 

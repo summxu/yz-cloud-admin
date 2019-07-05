@@ -2,35 +2,35 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: chenjie
- * @Last Modified time: 2019-07-05 16:49:52
+ * @Last Modified time: 2019-07-05 17:29:41
  */
 <template>
   <div class="app-container">
     <!-- 模态窗 -->
-    <el-form
-      ref="dataForm"
-      label-position="left"
-      label-width="200px"
-      style="width: 600px; margin-left:50px;"
-    >
-      <el-form-item
-        v-for="(item,index) in list"
-        :key="item.id"
-        :label="item.memo"
-        :prop="item.name"
-      >
-        <el-input v-model="list[index].value" />
+    <el-form ref="dataForm" label-position="left" style=" margin-left:50px;">
+      <el-form-item v-for="(item,index) in list" :key="item.id">
+        <el-input
+          @keydown.native="$set(list[index], 'show', true)"
+          v-model="item.type_name"
+          style="width: 300px;"
+        />
+        <el-button
+          v-if="item.show"
+          type="primary"
+          @click="updateData({type_name:item.type_name,id:item.id})"
+        >修改</el-button>
       </el-form-item>
 
       <el-form-item>
-        <el-button type="primary" @click="updateData()">{{ $t('table.confirm') }}</el-button>
+        <el-input v-model="temp_name" style="width: 300px;" />
+        <el-button type="success" @click="addData">添加</el-button>
       </el-form-item>
     </el-form>
   </div>
 </template>
 
 <script>
-import { get_config, update_config } from '@/api/yunzhijia'
+import { need_type, edit_need_type } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -49,7 +49,7 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 }, {})
 
 export default {
-  name: 'Site-option',
+  name: 'demand',
   components: { Pagination },
   directives: { waves },
   filters: {
@@ -72,6 +72,7 @@ export default {
       listLoading: true,
       calendarTypeOptions,
       list: [],
+      temp_name: '',
       rules: {
       }
     }
@@ -82,19 +83,16 @@ export default {
   methods: {
     getList () {
       this.listLoading = true
-      get_config().then(response => {
+      need_type().then(response => {
         this.list = response.result
-
         this.listLoading = false
       })
     },
-
-    updateData () {
-      let tempData = {}
-      this.list.forEach(item => {
-        tempData[item.name] = item.value
-      });
-      update_config(tempData).then(() => {
+    addData () {
+      this.getList()
+    },
+    updateData (obj) {
+      edit_need_type(obj).then(() => {
         this.dialogFormVisible = false
         this.$notify({
           title: '成功',

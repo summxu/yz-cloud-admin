@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: chenjie
- * @Last Modified time: 2019-07-05 11:49:02
+ * @Last Modified time: 2019-07-05 18:26:21
  */
 <template>
   <div class="app-container">
@@ -24,7 +24,13 @@
         icon="el-icon-search"
         @click="handleFilter"
       >{{ $t('table.search') }}</el-button>
-
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-edit"
+        @click="handleCreate"
+      >{{ $t('table.add') }}</el-button>
       <el-button
         v-waves
         :loading="downloadLoading"
@@ -47,14 +53,18 @@
     >
       <el-table-column
         :label="$t('table.id')"
+        prop="id"
         sortable="custom"
         align="center"
         width="80"
-        type="index"
-      ></el-table-column>
+      >
+        <template slot-scope="scope">
+          <span>{{ scope.row.id }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="用户名" min-width="100px">
         <template slot-scope="{row}">
-          <span>{{ row.username }}</span>
+          <span class="link-type" @click="handleUpdate(row)">{{ row.username }}</span>
         </template>
       </el-table-column>
       <el-table-column label="头像" width="100px" align="center">
@@ -111,11 +121,12 @@
       <el-table-column
         :label="$t('table.actions')"
         align="center"
-        width="0"
+        width="150"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
+          <el-button type="danger" size="mini" @click="delUser(row)">移除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -128,6 +139,62 @@
       :limit.sync="listQuery.limit"
       @pagination="getList"
     />
+
+    <!-- 模态窗 -->
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+      <el-form
+        ref="dataForm"
+        :rules="rules"
+        :model="temp"
+        label-position="right"
+        label-width="120px"
+        style="width: 400px; margin-left:50px;"
+      >
+        <el-form-item label="身份类型" prop="type">
+          <el-select v-model="temp.type" class="filter-item" placeholder="请选择">
+            <el-option
+              v-for="item in calendarTypeOptions"
+              :key="item.key"
+              :label="item.display_name"
+              :value="item.key"
+            />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="选择时间" prop="timestamp">
+          <el-date-picker
+            v-model="temp.timestamp"
+            type="datetime"
+            placeholder="Please pick a date"
+          />
+        </el-form-item>
+
+        <el-form-item label="用户名" prop="title">
+          <el-input v-model="temp.title" />
+        </el-form-item>
+        <el-form-item :label="$t('table.status')">
+          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
+            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item :label="$t('table.remark')">
+          <el-input
+            v-model="temp.remark"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            placeholder="Please input"
+          />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">{{ $t('table.cancel') }}</el-button>
+        <el-button
+          type="primary"
+          @click="dialogStatus==='create'?createData():updateData()"
+        >{{ $t('table.confirm') }}</el-button>
+      </div>
+    </el-dialog>
 
     <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
       <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
@@ -142,7 +209,7 @@
 </template>
 
 <script>
-import { userIndex } from '@/api/yunzhijia'
+import { getVal, addVal, updateVal, delVal } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -161,7 +228,7 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 }, {})
 
 export default {
-  name: 'Personage',
+  name: 'url',
   components: { Pagination },
   directives: { waves },
   filters: {
@@ -186,8 +253,7 @@ export default {
       listQuery: {
         p: 1,
         row: 20,
-        type: 1,
-        name: undefined
+        type: 2
       },
       calendarTypeOptions,
       statusOptions: ['published', 'draft', 'deleted'],
@@ -208,7 +274,11 @@ export default {
       },
       dialogPvVisible: false,
       pvData: [],
-
+      rules: {
+        type: [{ required: true, message: 'type is required', trigger: 'change' }],
+        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
+        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+      },
       downloadLoading: false
     }
   },
@@ -218,7 +288,7 @@ export default {
   methods: {
     getList () {
       this.listLoading = true
-      userIndex(this.listQuery).then(response => {
+      getVal(this.listQuery).then(response => {
         this.list = response.result.list
         this.total = response.result.count
         this.listLoading = false
@@ -280,7 +350,49 @@ export default {
         }
       })
     },
-
+    handleUpdate (row) {
+      this.temp = Object.assign({}, row) // copy obj
+      this.temp.timestamp = new Date(this.temp.timestamp)
+      this.dialogStatus = 'update'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
+    updateData () {
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          const tempData = Object.assign({}, this.temp)
+          tempData.timestamp = +new Date(tempData.timestamp)
+          updateArticle(tempData).then(() => {
+            for (const v of this.list) {
+              if (v.id === this.temp.id) {
+                const index = this.list.indexOf(v)
+                this.list.splice(index, 1, this.temp)
+                break
+              }
+            }
+            this.dialogFormVisible = false
+            this.$notify({
+              title: '成功',
+              message: '更新成功',
+              type: 'success',
+              duration: 2000
+            })
+          })
+        }
+      })
+    },
+    handleDelete (row) {
+      this.$notify({
+        title: '成功',
+        message: '删除成功',
+        type: 'success',
+        duration: 2000
+      })
+      const index = this.list.indexOf(row)
+      this.list.splice(index, 1)
+    },
     handleFetchPv (pv) {
       fetchPv(pv).then(response => {
         this.pvData = response.data.pvData
