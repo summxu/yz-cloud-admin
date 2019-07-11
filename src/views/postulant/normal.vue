@@ -1,8 +1,8 @@
 /*
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
- * @Last Modified by: chenjie
- * @Last Modified time: 2019-07-04 16:12:25
+ * @Last Modified by: Chenxu
+ * @Last Modified time: 2019-07-10 15:58:32
  */
 <template>
   <div class="app-container">
@@ -221,6 +221,8 @@ export default {
       userIndex(this.listQuery).then(response => {
         this.list = response.result.list
         this.total = response.result.count
+        this.listLoading = false
+      }).catch(err => {
         this.listLoading = false
       })
     },

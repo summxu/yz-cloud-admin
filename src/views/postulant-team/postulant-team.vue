@@ -161,7 +161,8 @@ export default {
       numberLoading: true,
       listQuery: {
         p: 1,
-        row: 20
+        row: 20,
+        type: 0
       },
       calendarTypeOptions,
       statusOptions: ['published', 'draft', 'deleted'],
@@ -207,6 +208,8 @@ export default {
       volunteers_team(this.listQuery).then(response => {
         this.list = response.result.list
         this.total = response.result.count
+        this.listLoading = false
+      }).catch(err => {
         this.listLoading = false
       })
     },

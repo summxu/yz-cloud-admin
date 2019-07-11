@@ -1,8 +1,8 @@
 /*
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
- * @Last Modified by: chenjie
- * @Last Modified time: 2019-07-05 18:26:21
+ * @Last Modified by: Chenxu
+ * @Last Modified time: 2019-07-10 21:37:14
  */
 <template>
   <div class="app-container">
@@ -62,57 +62,20 @@
           <span>{{ scope.row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="用户名" min-width="100px">
-        <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.username }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="头像" width="100px" align="center">
-        <template slot-scope="scope">
-          <img class="user-avatar" :src="scope.row.avatar" alt />
-        </template>
-      </el-table-column>
 
-      <el-table-column label="身份证号" width="150px" align="center">
+      <el-table-column label="快捷url名字" width="150px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.identity_card }}</span>
+          <span>{{ scope.row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="手机号" min-width="100px" align="center">
+      <el-table-column label="快捷url" min-width="100px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.mobile }}</span>
+          <span>{{ scope.row.url }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="身份类型" min-width="100px" align="center">
+      <el-table-column label="分类名" min-width="100px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.type }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="服务类型" width="150px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.service_type_id.toString() }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="服务时长" min-width="100px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.service_hour }} 小时</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="活跃天数" min-width="100px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.login_statis }} 天</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="星级" class-name="status-col" width="150">
-        <template slot-scope="{row}">
-          <el-rate disabled v-model="row.start"></el-rate>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="最后登录时间" width="130px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.login_time | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ scope.row.cat_name }}</span>
         </template>
       </el-table-column>
 
@@ -135,7 +98,7 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="listQuery.page"
+      :page.sync="listQuery.p"
       :limit.sync="listQuery.limit"
       @pagination="getList"
     />
@@ -144,47 +107,29 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form
         ref="dataForm"
-        :rules="rules"
         :model="temp"
         label-position="right"
         label-width="120px"
         style="width: 400px; margin-left:50px;"
       >
-        <el-form-item label="身份类型" prop="type">
-          <el-select v-model="temp.type" class="filter-item" placeholder="请选择">
+        <el-form-item label="快捷url名字" prop="title">
+          <el-input v-model="temp.name" />
+        </el-form-item>
+        <el-form-item label="快捷url" prop="title">
+          <el-input v-model="temp.url" />
+        </el-form-item>
+        <el-form-item label="排序" prop="title">
+          <el-input v-model="temp.sort" />
+        </el-form-item>
+        <el-form-item label="快捷分类" prop="type">
+          <el-select v-model="temp.cat_id" class="filter-item" placeholder="请选择">
             <el-option
-              v-for="item in calendarTypeOptions"
+              v-for="item in cats"
               :key="item.key"
               :label="item.display_name"
               :value="item.key"
             />
           </el-select>
-        </el-form-item>
-
-        <el-form-item label="选择时间" prop="timestamp">
-          <el-date-picker
-            v-model="temp.timestamp"
-            type="datetime"
-            placeholder="Please pick a date"
-          />
-        </el-form-item>
-
-        <el-form-item label="用户名" prop="title">
-          <el-input v-model="temp.title" />
-        </el-form-item>
-        <el-form-item :label="$t('table.status')">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item :label="$t('table.remark')">
-          <el-input
-            v-model="temp.remark"
-            :autosize="{ minRows: 2, maxRows: 4}"
-            type="textarea"
-            placeholder="Please input"
-          />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -253,18 +198,17 @@ export default {
       listQuery: {
         p: 1,
         row: 20,
-        type: 2
+        order: 'url.id desc'
       },
       calendarTypeOptions,
       statusOptions: ['published', 'draft', 'deleted'],
       temp: {
         id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        type: '',
-        status: 'published'
+        name: 1,
+        url: '',
+        sort: '',
+        cat_id: '',
+        status: 0
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -295,7 +239,7 @@ export default {
       })
     },
     handleFilter () {
-      this.listQuery.page = 1
+      this.listQuery.p = 1
       this.getList()
     },
 
@@ -316,12 +260,10 @@ export default {
     resetTemp () {
       this.temp = {
         id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
+        name: 1,
+        url: '',
+        sort: '',
+        cat_id: ''
       }
     },
     handleCreate () {

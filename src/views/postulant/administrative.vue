@@ -1,8 +1,8 @@
 /*
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
- * @Last Modified by: chenjie
- * @Last Modified time: 2019-07-04 16:16:23
+ * @Last Modified by: Chenxu
+ * @Last Modified time: 2019-07-10 20:43:24
  */
 <template>
   <div class="app-container">
@@ -103,6 +103,11 @@
           <span>{{ scope.row.login_statis }} 天</span>
         </template>
       </el-table-column>
+      <el-table-column label="所属团队" min-width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.team_name }} 天</span>
+        </template>
+      </el-table-column>
 
       <el-table-column label="星级" class-name="status-col" width="150">
         <template slot-scope="{row}">
@@ -125,7 +130,7 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
+          <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button> -->
           <el-button type="danger" size="mini" @click="delUser(row)">移除</el-button>
         </template>
       </el-table-column>
@@ -144,7 +149,6 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form
         ref="dataForm"
-        :rules="rules"
         :model="temp"
         label-position="right"
         label-width="120px"
@@ -161,38 +165,37 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="选择时间" prop="timestamp">
-          <el-date-picker
-            v-model="temp.timestamp"
-            type="datetime"
-            placeholder="Please pick a date"
-          />
-        </el-form-item>
-
-        <el-form-item label="用户名" prop="title">
-          <el-input v-model="temp.title" />
-        </el-form-item>
-        <el-form-item :label="$t('table.status')">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
+        <el-form-item label="所属团队" prop="id">
+          <el-select v-model="temp.team_id" class="filter-item" placeholder="请选择">
+            <el-option
+              v-for="item in teamList"
+              :key="item.key"
+              :label="item.display_name"
+              :value="item.key"
+            />
           </el-select>
         </el-form-item>
 
-        <el-form-item :label="$t('table.remark')">
-          <el-input
-            v-model="temp.remark"
-            :autosize="{ minRows: 2, maxRows: 4}"
-            type="textarea"
-            placeholder="Please input"
-          />
+        <el-form-item label="所属区域" prop="id">
+          <el-cascader v-model="temp.area_id" :options="areaList"></el-cascader>
+        </el-form-item>
+
+        <el-form-item label="用户姓名" prop="title">
+          <el-input v-model="temp.user_name" />
+        </el-form-item>
+        <el-form-item label="密码" prop="title">
+          <el-input type="password" v-model="temp.password" />
+        </el-form-item>
+        <el-form-item label="登陆手机号" prop="title">
+          <el-input v-model="temp.mobile" />
+        </el-form-item>
+        <el-form-item label="身份证号" prop="title">
+          <el-input v-model="temp.identity_card" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">{{ $t('table.cancel') }}</el-button>
-        <el-button
-          type="primary"
-          @click="dialogStatus==='create'?createData():updateData()"
-        >{{ $t('table.confirm') }}</el-button>
+        <el-button type="primary" @click="addXzmember">{{ $t('table.confirm') }}</el-button>
       </div>
     </el-dialog>
 
@@ -209,16 +212,14 @@
 </template>
 
 <script>
-import { userIndex } from '@/api/yunzhijia'
+import { userIndex, get_area, add_xzmember, remove_xzmember, volunteers_team } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 const calendarTypeOptions = [
-  { key: 'CN', display_name: 'China' },
-  { key: 'US', display_name: 'USA' },
-  { key: 'JP', display_name: 'Japan' },
-  { key: 'EU', display_name: 'Eurozone' }
+  { key: '1', display_name: '团员' },
+  { key: '2', display_name: '团队长' }
 ]
 
 // arr to obj, such as { CN : "China", US : "USA" }
@@ -226,6 +227,8 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
   acc[cur.key] = cur.display_name
   return acc
 }, {})
+
+var teamList = []
 
 export default {
   name: 'Administrative',
@@ -250,6 +253,7 @@ export default {
       list: null,
       total: 0,
       listLoading: true,
+      areaList: [],
       listQuery: {
         p: 1,
         row: 20,
@@ -257,15 +261,16 @@ export default {
         name: undefined
       },
       calendarTypeOptions,
+      teamList,
       statusOptions: ['published', 'draft', 'deleted'],
       temp: {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
+        user_name: '',
+        password: '',
+        mobile: '',
+        identity_card: '',
         type: '',
-        status: 'published'
+        team_id: '',
+        area_id: []
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -275,23 +280,53 @@ export default {
       },
       dialogPvVisible: false,
       pvData: [],
-      rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
-      },
+
       downloadLoading: false
     }
   },
   created () {
+    this.getXzteam()
     this.getList()
+    this.getArea()
   },
   methods: {
+    /* 获取地理位置 */
+    getArea () {
+      get_area().then(response => {
+        // this.areaList = response.result
+        this.areaList.push(response.result)
+        // console.log();
+      })
+    },
+    /* 行政志愿者团队 */
+    getXzteam () {
+      volunteers_team({
+        p: 1,
+        row: 20,
+        type: 1
+      }).then(response => {
+        response.result.list.forEach(item => {
+          teamList.push({ key: item.id, display_name: item.team_name })
+        });
+      })
+    },
+    /* 添加 志愿者 */
+    addXzmember () {
+      this.temp.area_id = this.temp.area_id[2]
+      add_xzmember(this.temp).then(response => {
+        this.list = response.result.list
+        this.total = response.result.count
+        this.dialogFormVisible = false
+        this.getList()
+      })
+    },
     getList () {
       this.listLoading = true
       userIndex(this.listQuery).then(response => {
         this.list = response.result.list
         this.total = response.result.count
+        this.listLoading = false
+      }).catch(err => {
         this.listLoading = false
       })
     },
@@ -326,7 +361,6 @@ export default {
       }
     },
     handleCreate () {
-      this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {

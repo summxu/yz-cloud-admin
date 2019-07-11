@@ -1,8 +1,8 @@
 /*
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
- * @Last Modified by: chenjie
- * @Last Modified time: 2019-07-05 11:49:02
+ * @Last Modified by: Chenxu
+ * @Last Modified time: 2019-07-10 19:06:33
  */
 <template>
   <div class="app-container">
@@ -91,6 +91,11 @@
       <el-table-column label="活跃天数" min-width="100px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.login_statis }} 天</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="所属团队" min-width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.team_name }} 天</span>
         </template>
       </el-table-column>
 
@@ -221,6 +226,8 @@ export default {
       userIndex(this.listQuery).then(response => {
         this.list = response.result.list
         this.total = response.result.count
+        this.listLoading = false
+      }).catch(err => {
         this.listLoading = false
       })
     },

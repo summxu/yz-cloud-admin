@@ -34,9 +34,9 @@ service.interceptors.request.use(
         })
       } else if (config.method === 'get') {
         config.params = {
-          token: token,
-          admin_id: admin_id,
-          ...config.params
+          // token: token,
+          // admin_id: admin_id,
+          ...config.data
         }
       }
     }

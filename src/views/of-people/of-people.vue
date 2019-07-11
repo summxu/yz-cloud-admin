@@ -79,36 +79,37 @@
           <span>{{ scope.row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="账号" width="180px" align="center">
+
+      <el-table-column label="发布需求人姓名：电话" width="150px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ scope.row.apply_user_id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="用户名" min-width="180px">
-        <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.title }}</span>
-          <el-tag>{{ row.type | typeFilter }}</el-tag>
+
+      <el-table-column label="需求名字" width="150px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="手机号" width="150px" align="center">
+      <el-table-column label="详细内容" width="150px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.author }}</span>
+          <span>{{ scope.row.detail }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="头像" width="150px" align="center">
+      <el-table-column label="回复的管理" width="150px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.author }}</span>
+          <span>{{ scope.row.reply_user_id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="身份类型" width="150px" align="center">
+      <el-table-column label="回复内容" width="auto" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.pageviews }}</span>
+          <span>{{ scope.row.reply }}</span>
         </template>
       </el-table-column>
 
       <el-table-column label="创建时间" width="180px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ scope.row.createtime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
 
@@ -123,34 +124,18 @@
       <el-table-column
         :label="$t('table.actions')"
         align="center"
-        width="230"
+        width="150"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
-          <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button> -->
+          <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)">回复</el-button> -->
           <el-button
-            v-if="row.status!='pass'"
+            v-if="row.status!='已回复'"
             size="mini"
             type="success"
             @click="handleUpdate(row)"
           >回复</el-button>
-          <!-- <el-button
-            v-if="row.status!='deny'"
-            size="mini"
-            type="danger"
-            @click="handleModifyStatus(row,'deny')"
-          >拒绝</el-button>-->
-          <!-- <el-button
-            v-if="row.status!='draft'"
-            size="mini"
-            @click="handleModifyStatus(row,'draft')"
-          >{{ $t('table.draft') }}</el-button>
-          <el-button
-            v-if="row.status!='deleted'"
-            size="mini"
-            type="danger"
-            @click="handleModifyStatus(row,'deleted')"
-          >{{ $t('table.delete') }}</el-button>-->
+          <el-button type="danger" @click="delNeed(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -172,12 +157,12 @@
         :model="temp"
         label-position="right"
         label-width="120px"
-        style="width: 400px; margin-left:50px;"
+        style="width: 80%; margin-left:50px;"
       >
         <el-form-item label="回复">
           <el-input
             v-model="temp.remark"
-            :autosize="{ minRows: 2, maxRows: 4}"
+            :autosize="{ minRows: 6, maxRows: 10}"
             type="textarea"
             placeholder="请输入回复内容"
           />
@@ -185,10 +170,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">{{ $t('table.cancel') }}</el-button>
-        <el-button
-          type="primary"
-          @click="dialogStatus==='create'?createData():updateData()"
-        >{{ $t('table.confirm') }}</el-button>
+        <el-button type="primary" @click="replay">{{ $t('table.confirm') }}</el-button>
       </div>
     </el-dialog>
 
@@ -205,7 +187,7 @@
 </template>
 
 <script>
-import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/yunzhijia'
+import { easy_need, reply_need, del_need } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -247,12 +229,8 @@ export default {
       total: 0,
       listLoading: true,
       listQuery: {
-        page: 1,
-        limit: 20,
-        importance: undefined,
-        title: undefined,
-        type: undefined,
-        sort: '+id'
+        p: 1,
+        row: 20
       },
       importanceOptions: [1, 2, 3],
       calendarTypeOptions,
@@ -271,7 +249,7 @@ export default {
       dialogFormVisible: false,
       dialogStatus: '',
       textMap: {
-        update: '编辑',
+        update: '回复',
         create: '创建'
       },
       dialogPvVisible: false,
@@ -290,14 +268,20 @@ export default {
   methods: {
     getList () {
       this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 0.5 * 1000)
+      easy_need(this.listQuery).then(response => {
+        this.list = response.result.list
+        this.total = response.result.count
+        this.listLoading = false
+      }).catch(err => {
+        this.listLoading = false
+      })
+    },
+    /* 回复 */
+    replay () {
+      reply_need({ id: this.temp.id, text: this.temp.remark }).then(response => {
+        console.log(response)
+        this.dialogFormVisible = false
+        this.getList()
       })
     },
     handleFilter () {
@@ -395,15 +379,18 @@ export default {
         }
       })
     },
-    handleDelete (row) {
-      this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
+    delNeed (row) {
+      console.log(row)
+      del_need({ id: row.id }).then(res => {
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+        const index = this.list.indexOf(row)
+        this.list.splice(index, 1)
       })
-      const index = this.list.indexOf(row)
-      this.list.splice(index, 1)
     },
     handleFetchPv (pv) {
       fetchPv(pv).then(response => {
