@@ -1,37 +1,20 @@
+/*
+ * @Author: Chenxu 
+ * @Date: 2019-07-04 13:59:59 
+ * @Last Modified by: Chenxu
+ * @Last Modified time: 2019-07-14 18:13:05
+ */
 <template>
   <div class="app-container">
     <div class="filter-container">
       <!-- 条件查询 -->
       <el-input
-        v-model="listQuery.title"
-        placeholder="标题"
-        style="width: 200px;"
+        v-model="listQuery.name"
+        placeholder="请输入查询条件"
+        style="width: 300px;"
         class="filter-item"
         @keyup.enter.native="handleFilter"
       />
-      <el-select
-        v-model="listQuery.importance"
-        placeholder="身份类型"
-        clearable
-        style="width: 120px"
-        class="filter-item"
-      >
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select
-        v-model="listQuery.type"
-        placeholder="状态"
-        clearable
-        class="filter-item"
-        style="width: 130px"
-      >
-        <el-option
-          v-for="item in calendarTypeOptions"
-          :key="item.key"
-          :label="item.display_name+'('+item.key+')'"
-          :value="item.key"
-        />
-      </el-select>
 
       <!-- 操作按钮 -->
       <el-button
@@ -79,42 +62,30 @@
           <span>{{ scope.row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="账号" width="180px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="用户名" min-width="180px">
-        <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.title }}</span>
-          <el-tag>{{ row.type | typeFilter }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="手机号" width="150px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.author }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="头像" width="150px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.author }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="身份类型" width="150px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.pageviews }}</span>
-        </template>
-      </el-table-column>
 
-      <el-table-column label="创建时间" width="180px" align="center">
+      <el-table-column label="用户名" width="150px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ scope.row.username }}</span>
         </template>
       </el-table-column>
-
-      <el-table-column label="状态" class-name="status-col" width="150">
-        <template slot-scope="{row}">
-          <el-tag :type="row.status | statusFilter">{{ row.status }}</el-tag>
+      <el-table-column label="是否" width="300px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.is_free }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="连续登陆天数" width="200px" align="center">
+        <template slot-scope="scope">
+          <span>{{scope.row.days}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="角色" width="200px" align="center">
+        <template slot-scope="scope">
+          <span>{{scope.row.role_id}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="所属地区" min-width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.area_id }}</span>
         </template>
       </el-table-column>
 
@@ -123,28 +94,18 @@
       <el-table-column
         :label="$t('table.actions')"
         align="center"
-        width="230"
+        width="150"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">权限</el-button>
-          <!-- <el-button
-            v-if="row.status!='published'"
-            size="mini"
-            type="success"
-            @click="handleModifyStatus(row,'published')"
-          >发布</el-button>-->
-          <!-- <el-button
-            v-if="row.status!='draft'"
-            size="mini"
-            @click="handleModifyStatus(row,'draft')"
-          >{{ $t('table.draft') }}</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
+          <el-button v-if="row.is_free == '正常'" type="danger" size="mini" @click="delUser(row,1)">冻结</el-button>
           <el-button
-            v-if="row.status!='deleted'"
+            type="success"
+            v-if="row.is_free != '正常'"
             size="mini"
-            type="danger"
-            @click="handleModifyStatus(row,'deleted')"
-          >{{ $t('table.delete') }}</el-button>-->
+            @click="delUser(row,0)"
+          >开启</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -153,7 +114,7 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="listQuery.page"
+      :page.sync="listQuery.p"
       :limit.sync="listQuery.limit"
       @pagination="getList"
     />
@@ -162,56 +123,25 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form
         ref="dataForm"
-        :rules="rules"
         :model="temp"
         label-position="right"
         label-width="120px"
         style="width: 400px; margin-left:50px;"
       >
-        <el-form-item label="身份类型" prop="type">
-          <el-select v-model="temp.type" class="filter-item" placeholder="请选择">
-            <el-option
-              v-for="item in calendarTypeOptions"
-              :key="item.key"
-              :label="item.display_name"
-              :value="item.key"
-            />
+        <el-form-item v-if="dialogStatus !='update'" label="用户名" prop="title">
+          <el-input v-model="temp.username" />
+        </el-form-item>
+        <el-form-item label="密码" prop="title">
+          <el-input v-model="temp.password" />
+        </el-form-item>
+
+        <el-form-item label="所属角色" prop="title">
+          <el-select v-model="temp.role_id" placeholder="请选择">
+            <el-option v-for="item in roles" :key="item.id" :label="item.title" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-
-        <el-form-item label="选择时间" prop="timestamp">
-          <el-date-picker
-            v-model="temp.timestamp"
-            type="datetime"
-            placeholder="Please pick a date"
-          />
-        </el-form-item>
-
-        <el-form-item label="用户名" prop="title">
-          <el-input v-model="temp.title" />
-        </el-form-item>
-        <el-form-item :label="$t('table.status')">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
-          </el-select>
-        </el-form-item>
-
-        <!-- <el-form-item :label="$t('table.importance')">
-          <el-rate
-            v-model="temp.importance"
-            :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
-            :max="3"
-            style="margin-top:8px;"
-          />
-        </el-form-item>-->
-
-        <el-form-item :label="$t('table.remark')">
-          <el-input
-            v-model="temp.remark"
-            :autosize="{ minRows: 2, maxRows: 4}"
-            type="textarea"
-            placeholder="Please input"
-          />
+        <el-form-item label="所属区域" prop="title">
+          <el-cascader v-model="temp.area_id" :options="areas"></el-cascader>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -236,7 +166,7 @@
 </template>
 
 <script>
-import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/yunzhijia'
+import { add_admin, role_index, admin_index, update_admin, get_area, open_free_admin, cat, token } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -255,7 +185,7 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 }, {})
 
 export default {
-  name: 'admin-manage',
+  name: 'url',
   components: { Pagination },
   directives: { waves },
   filters: {
@@ -273,31 +203,28 @@ export default {
   },
   data () {
     return {
+      areas: [],
+      roles: [],
+      images: '',
+      upData: {
+        token: ""
+      },
       tableKey: 0,
       list: null,
       total: 0,
+      cats: [],
       listLoading: true,
       listQuery: {
-        page: 1,
-        limit: 20,
-        importance: undefined,
-        title: undefined,
-        type: undefined,
-        sort: '+id'
+        p: 1,
+        row: 20
       },
-      importanceOptions: [1, 2, 3],
       calendarTypeOptions,
-      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       statusOptions: ['published', 'draft', 'deleted'],
-      showReviewer: false,
       temp: {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        type: '',
-        status: 'published'
+        username: '',
+        password: '',
+        role_id: '',
+        area_id: ''
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -317,31 +244,74 @@ export default {
   },
   created () {
     this.getList()
+    // this.getCat()
+    this.getAreas()
+    // this.getToken()
+    this.getRole()
   },
   methods: {
+    getRole () {
+      role_index({ p: 1, row: 200 }).then(res => {
+        this.roles = res.result.list
+      })
+    },
+    handleAvatarSuccess (res, file) {
+      this.images = URL.createObjectURL(file.raw);
+      this.temp.image = res.key
+    },
+    beforeAvatarUpload (file) {
+      const isLt2M = file.size / 1024 / 1024 < 2;
+      if (!isLt2M) {
+        this.$message.error("上传头像图片大小不能超过 2MB!");
+      }
+      return isLt2M;
+    },
+    /* 获取 七牛云token */
+    getToken () {
+      token().then(res => {
+        this.upData.token = res.result
+      })
+    },
+    delUser (row, state) {
+      open_free_admin({ id: row.id, is_free: state }).then(res => {
+        this.$notify({
+          title: '成功',
+          message: '操作成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.getList()
+      })
+    },
+    getAreas () {
+      get_area().then(res => {
+        this.areas.push(res.result)
+      })
+    },
+    getCat () {
+      let params = {
+        p: 1,
+        row: 20,
+        order: 'url.id desc',
+      }
+      cat(params).then(res => {
+        this.cats = res.result
+        console.log(res);
+      })
+    },
     getList () {
       this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 0.5 * 1000)
+      admin_index(this.listQuery).then(response => {
+        this.list = response.result.list
+        this.total = response.result.count
+        this.listLoading = false
       })
     },
     handleFilter () {
-      this.listQuery.page = 1
+      this.listQuery.p = 1
       this.getList()
     },
-    handleModifyStatus (row, status) {
-      this.$message({
-        message: '操作成功',
-        type: 'success'
-      })
-      row.status = status
-    },
+
     sortChange (data) {
       const { prop, order } = data
       if (prop === 'id') {
@@ -358,13 +328,10 @@ export default {
     },
     resetTemp () {
       this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
+        username: '',
+        password: '',
+        role_id: '',
+        area_id: ''
       }
     },
     handleCreate () {
@@ -376,26 +343,23 @@ export default {
       })
     },
     createData () {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temp.author = 'vue-element-admin'
-          createArticle(this.temp).then(() => {
-            this.list.unshift(this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
-            })
-          })
-        }
+      this.temp.area_id = this.temp.area_id[2]
+      // this.temp = this.temp[2]
+      add_admin(this.temp).then((res) => {
+        this.list.unshift(this.temp)
+        this.dialogFormVisible = false
+        this.$notify({
+          title: '成功',
+          message: '创建成功',
+          type: 'success',
+          duration: 2000
+        })
       })
     },
     handleUpdate (row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp)
+      // this.temp = Object.assign({}, row) // copy obj
+      this.resetTemp()
+      this.temp.id = row.id
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -403,27 +367,23 @@ export default {
       })
     },
     updateData () {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp)
-          updateArticle(tempData).then(() => {
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '更新成功',
-              type: 'success',
-              duration: 2000
-            })
-          })
+      this.temp.area_id = this.temp.area_id[2]
+      delete this.temp.username
+      update_admin(this.temp).then(() => {
+        for (const v of this.list) {
+          if (v.id === this.temp.id) {
+            const index = this.list.indexOf(v)
+            this.list.splice(index, 1, this.temp)
+            break
+          }
         }
+        this.dialogFormVisible = false
+        this.$notify({
+          title: '成功',
+          message: '更新成功',
+          type: 'success',
+          duration: 2000
+        })
       })
     },
     handleDelete (row) {
@@ -468,3 +428,29 @@ export default {
   }
 }
 </script>
+
+<style scoped lang="less">
+/deep/.avatar-uploader .el-upload {
+  border: 1px dashed #000000;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+/deep/.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+/deep/.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+/deep/.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
+</style>

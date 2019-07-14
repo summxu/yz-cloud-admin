@@ -133,7 +133,7 @@ export const asyncRoutes = [
     path: '',
     component: Layout,
     redirect: 'postulant-team',
-    meta: { title: '行政志愿者团队', icon: 'example' },
+    meta: { title: '志愿者团队', icon: 'example' },
     children: [
       {
         path: 'postulant-team',
@@ -154,6 +154,20 @@ export const asyncRoutes = [
         component: () => import('@/views/admin-postulant-team/admin-postulant-team'),
         name: 'admin-postulant-team',
         meta: { title: '行政志愿者团队', affix: true }
+      }
+    ]
+  },
+  {
+    path: '',
+    component: Layout,
+    redirect: 'news',
+    meta: { title: '新闻管理', icon: 'example' },
+    children: [
+      {
+        path: 'news',
+        component: () => import('@/views/news/news'),
+        name: 'news',
+        meta: { title: '新闻管理', affix: true }
       }
     ]
   },

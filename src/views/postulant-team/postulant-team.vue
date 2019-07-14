@@ -1,8 +1,8 @@
 /*
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
- * @Last Modified by: chenjie
- * @Last Modified time: 2019-07-05 16:38:59
+ * @Last Modified by: Chenxu
+ * @Last Modified time: 2019-07-14 17:30:17
  */
 <template>
   <div class="app-container">
@@ -44,9 +44,9 @@
           <span>{{ scope.row.team_leader_id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="实践中心相册" width="100px" align="center">
+      <el-table-column label="实践中心相册" min-width="100px" align="center">
         <template slot-scope="scope">
-          <img :src="scope.row.album" alt />
+          <img style="width:50px;height:50px;" v-for="(item,index) in scope.row.album" :key="index" :src="item.preview_image" alt />
         </template>
       </el-table-column>
       <el-table-column label="创建时间" width="150px" align="center">
@@ -162,7 +162,7 @@ export default {
       listQuery: {
         p: 1,
         row: 20,
-        type: 0
+        type: 1
       },
       calendarTypeOptions,
       statusOptions: ['published', 'draft', 'deleted'],

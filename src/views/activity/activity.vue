@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-10 20:51:54
+ * @Last Modified time: 2019-07-14 21:06:26
  */
 <template>
   <div class="app-container">
@@ -99,9 +99,15 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="图片组" width="100px" align="center">
+      <el-table-column label="图片组" min-width="100px" align="center">
         <template slot-scope="scope">
-          <img :src="scope.row.images" alt />
+          <img
+            style="width:50px;height:50px;"
+            v-for="(item,index) in scope.row.images"
+            :src="item.preview_image"
+            :key="index"
+            alt
+          />
         </template>
       </el-table-column>
       <el-table-column label="创建时间" width="150px" align="center">
@@ -118,11 +124,13 @@
       </el-table-column>
 
       <!-- 操作 -->
-      <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="300" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="viewNumbers(row)">查看成员</el-button>
           <el-button v-if="row.status == '审核中'" type="success" size="mini" @click="agree(row)">审核</el-button>
           <el-button v-if="row.status == '审核中'" type="danger" size="mini" @click="reject(row)">撤销</el-button>
+          <el-button v-if="row.is_top == '0'" size="mini" @click="top(row,1)">置顶</el-button>
+          <el-button v-if="row.is_top == '1'" size="mini" @click="top(row,0)">取消置顶</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -169,7 +177,7 @@
 </template>
 
 <script>
-import { need_index, check_need, need_member, ce_need } from '@/api/yunzhijia'
+import { need_index, check_need, need_member, ce_need, need_top } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -229,6 +237,15 @@ export default {
     this.getList()
   },
   methods: {
+    top (row, top) {
+      need_top({ top: top, id: row.id }).then(res => {
+        this.getList()
+        this.$message({
+          type: 'success',
+          message: res.msg
+        })
+      })
+    },
     getNumber (id) {
       need_member({ id: id, p: 1, row: 99999 }).then(response => {
         this.numbers = response.result.list

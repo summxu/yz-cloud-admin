@@ -1,8 +1,8 @@
 /*
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
- * @Last Modified by: chenjie
- * @Last Modified time: 2019-07-05 17:41:49
+ * @Last Modified by: Chenxu
+ * @Last Modified time: 2019-07-14 19:11:45
  */
 <template>
   <div class="app-container">
@@ -56,7 +56,7 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="listQuery.page"
+      :page.sync="listQuery.p"
       :limit.sync="listQuery.limit"
       @pagination="getList"
     />

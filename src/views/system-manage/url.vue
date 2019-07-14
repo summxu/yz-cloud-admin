@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-13 16:51:45
+ * @Last Modified time: 2019-07-14 19:23:43
  */
 <template>
   <div class="app-container">
@@ -75,14 +75,14 @@
       </el-table-column>
       <el-table-column label="icon图标" width="200px" align="center">
         <template slot-scope="scope">
-          <img :src="scope.row.url.image" alt />
+          <img style="width:50px;height:50px;" :src="scope.row.image.preview_image" alt />
         </template>
       </el-table-column>
-      <el-table-column label="排序" width="200px" align="center">
+      <!-- <el-table-column label="排序" width="200px" align="center">
         <template slot-scope="scope">
-          <img :src="scope.row.sort" alt />
+          <span>{{scope.row.sort}}</span>
         </template>
-      </el-table-column>
+      </el-table-column>-->
       <el-table-column label="分类名" min-width="100px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.cat_name }}</span>
@@ -129,7 +129,17 @@
           <el-input v-model="temp.url" />
         </el-form-item>
         <el-form-item label="图标" prop="title">
-          <el-input v-model="temp.image" />
+          <el-upload
+            class="avatar-uploader"
+            action="http://up.qiniup.com/"
+            :show-file-list="false"
+            :data="upData"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <img v-if="images" :src="images" class="avatar" />
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
         </el-form-item>
 
         <el-form-item label="排序" prop="title">
@@ -163,7 +173,7 @@
 </template>
 
 <script>
-import { getVal, addVal, updateVal, delVal, cat } from '@/api/yunzhijia'
+import { getVal, addVal, updateVal, delVal, cat, token } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -200,6 +210,10 @@ export default {
   },
   data () {
     return {
+      images: '',
+      upData: {
+        token: ""
+      },
       tableKey: 0,
       list: null,
       total: 0,
@@ -240,8 +254,26 @@ export default {
   created () {
     this.getList()
     this.getCat()
+    this.getToken()
   },
   methods: {
+    handleAvatarSuccess (res, file) {
+      this.images = URL.createObjectURL(file.raw);
+      this.temp.image = res.key
+    },
+    beforeAvatarUpload (file) {
+      const isLt2M = file.size / 1024 / 1024 < 2;
+      if (!isLt2M) {
+        this.$message.error("上传头像图片大小不能超过 2MB!");
+      }
+      return isLt2M;
+    },
+    /* 获取 七牛云token */
+    getToken () {
+      token().then(res => {
+        this.upData.token = res.result
+      })
+    },
     delUser (row) {
       delVal({ id: row.id }).then(res => {
         this.$notify({
@@ -393,5 +425,28 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
+/deep/.avatar-uploader .el-upload {
+  border: 1px dashed #000000;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+/deep/.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+/deep/.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+/deep/.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
 </style>

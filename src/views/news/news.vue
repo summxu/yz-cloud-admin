@@ -1,11 +1,17 @@
+/*
+ * @Author: Chenxu 
+ * @Date: 2019-07-04 13:59:59 
+ * @Last Modified by: Chenxu
+ * @Last Modified time: 2019-07-14 16:53:19
+ */
 <template>
   <div class="app-container">
     <div class="filter-container">
       <!-- 条件查询 -->
       <el-input
-        v-model="listQuery.title"
-        placeholder="标题"
-        style="width: 200px;"
+        v-model="listQuery.name"
+        placeholder="请输入查询条件"
+        style="width: 300px;"
         class="filter-item"
         @keyup.enter.native="handleFilter"
       />
@@ -18,7 +24,13 @@
         icon="el-icon-search"
         @click="handleFilter"
       >{{ $t('table.search') }}</el-button>
-
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-edit"
+        @click="handleCreate"
+      >{{ $t('table.add') }}</el-button>
       <el-button
         v-waves
         :loading="downloadLoading"
@@ -51,42 +63,29 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="发布需求人姓名：电话" width="150px" align="center">
+      <el-table-column label="名字" width="150px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.apply_user_id }}</span>
+          <span>{{ scope.row.title }}</span>
         </template>
       </el-table-column>
-
-      <el-table-column label="需求名字" width="150px" align="center">
+      <el-table-column label="图片" width="300px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.name }}</span>
+          <img style="width:50px;height:50px" :src="scope.row.image.preview_image" alt />
         </template>
       </el-table-column>
-      <el-table-column label="详细内容" width="150px" align="center">
+      <el-table-column label="是否置顶" width="200px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.detail }}</span>
+          <span>{{scope.row.is_top}}</span>
         </template>
       </el-table-column>
-      <el-table-column label="回复的管理" width="150px" align="center">
+      <!-- <el-table-column label="排序" width="200px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.reply_user_id }}</span>
+          <span>{{scope.row.sort}}</span>
         </template>
-      </el-table-column>
-      <el-table-column label="回复内容" width="auto" align="center">
+      </el-table-column>-->
+      <el-table-column label="内容" min-width="100px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.reply }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="创建时间" width="180px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.createtime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="状态" class-name="status-col" width="150">
-        <template slot-scope="{row}">
-          <el-tag :type="row.status | statusFilter">{{ row.status }}</el-tag>
+          <span>{{ scope.row.content }}</span>
         </template>
       </el-table-column>
 
@@ -99,14 +98,8 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
-          <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)">回复</el-button> -->
-          <el-button
-            v-if="row.status!='已回复'"
-            size="mini"
-            type="success"
-            @click="handleUpdate(row)"
-          >回复</el-button>
-          <el-button type="danger" @click="delNeed(row)">删除</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
+          <el-button type="danger" size="mini" @click="delUser(row)">移除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -115,7 +108,7 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="listQuery.page"
+      :page.sync="listQuery.p"
       :limit.sync="listQuery.limit"
       @pagination="getList"
     />
@@ -124,24 +117,47 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form
         ref="dataForm"
-        :rules="rules"
         :model="temp"
         label-position="right"
         label-width="120px"
-        style="width: 80%; margin-left:50px;"
+        style="width: 400px; margin-left:50px;"
       >
-        <el-form-item label="回复">
-          <el-input
-            v-model="temp.remark"
-            :autosize="{ minRows: 6, maxRows: 10}"
-            type="textarea"
-            placeholder="请输入回复内容"
-          />
+        <el-form-item label="标题" prop="title">
+          <el-input v-model="temp.title" />
+        </el-form-item>
+        <el-form-item label="内容" prop="title">
+          <el-input type="textarea" v-model="temp.content" />
+        </el-form-item>
+        <el-form-item label="图片" prop="title">
+          <el-upload
+            class="avatar-uploader"
+            action="http://up.qiniup.com/"
+            :show-file-list="false"
+            :data="upData"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <img v-if="images" :src="images" class="avatar" />
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+        </el-form-item>
+
+        <el-form-item label="是否置顶" prop="title">
+          <el-switch
+            :active-value="1"
+            :inactive-value="0"
+            v-model="temp.is_top"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+          ></el-switch>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">{{ $t('table.cancel') }}</el-button>
-        <el-button type="primary" @click="replay">{{ $t('table.confirm') }}</el-button>
+        <el-button
+          type="primary"
+          @click="dialogStatus==='create'?createData():updateData()"
+        >{{ $t('table.confirm') }}</el-button>
       </div>
     </el-dialog>
 
@@ -158,7 +174,7 @@
 </template>
 
 <script>
-import { easy_need, reply_need, del_need } from '@/api/yunzhijia'
+import { news_index, add_news, del_news, cat, token } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -177,7 +193,7 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 }, {})
 
 export default {
-  name: 'of-people',
+  name: 'url',
   components: { Pagination },
   directives: { waves },
   filters: {
@@ -195,32 +211,33 @@ export default {
   },
   data () {
     return {
+      images: '',
+      upData: {
+        token: ""
+      },
       tableKey: 0,
       list: null,
       total: 0,
+      cats: [],
       listLoading: true,
       listQuery: {
         p: 1,
-        row: 20
+        row: 20,
+        order: 'url.id desc'
       },
-      importanceOptions: [1, 2, 3],
       calendarTypeOptions,
-      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       statusOptions: ['published', 'draft', 'deleted'],
-      showReviewer: false,
       temp: {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
+        id: null,
         title: '',
-        type: '',
-        status: 'published'
+        content: '',
+        is_top: 1,
+        image: ''
       },
       dialogFormVisible: false,
       dialogStatus: '',
       textMap: {
-        update: '回复',
+        update: '编辑',
         create: '创建'
       },
       dialogPvVisible: false,
@@ -235,37 +252,62 @@ export default {
   },
   created () {
     this.getList()
+    this.getCat()
+    this.getToken()
   },
   methods: {
-    getList () {
-      this.listLoading = true
-      easy_need(this.listQuery).then(response => {
-        this.list = response.result.list
-        this.total = response.result.count
-        this.listLoading = false
-      }).catch(err => {
-        this.listLoading = false
+    handleAvatarSuccess (res, file) {
+      this.images = URL.createObjectURL(file.raw);
+      this.temp.image = res.key
+    },
+    beforeAvatarUpload (file) {
+      const isLt2M = file.size / 1024 / 1024 < 2;
+      if (!isLt2M) {
+        this.$message.error("上传头像图片大小不能超过 2MB!");
+      }
+      return isLt2M;
+    },
+    /* 获取 七牛云token */
+    getToken () {
+      token().then(res => {
+        this.upData.token = res.result
       })
     },
-    /* 回复 */
-    replay () {
-      reply_need({ id: this.temp.id, text: this.temp.remark }).then(response => {
-        console.log(response)
-        this.dialogFormVisible = false
+    delUser (row) {
+      del_news({ id: row.id }).then(res => {
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
         this.getList()
       })
     },
+    getCat () {
+      let params = {
+        p: 1,
+        row: 20,
+        order: 'url.id desc',
+      }
+      cat(params).then(res => {
+        this.cats = res.result
+        console.log(res);
+      })
+    },
+    getList () {
+      this.listLoading = true
+      news_index(this.listQuery).then(response => {
+        this.list = response.result.list
+        this.total = response.result.count
+        this.listLoading = false
+      })
+    },
     handleFilter () {
-      this.listQuery.page = 1
+      this.listQuery.p = 1
       this.getList()
     },
-    handleModifyStatus (row, status) {
-      this.$message({
-        message: '操作成功',
-        type: 'success'
-      })
-      row.status = status
-    },
+
     sortChange (data) {
       const { prop, order } = data
       if (prop === 'id') {
@@ -282,13 +324,11 @@ export default {
     },
     resetTemp () {
       this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
+        id: null,
         title: '',
-        status: 'published',
-        type: ''
+        content: '',
+        is_top: 1,
+        image: ''
       }
     },
     handleCreate () {
@@ -300,26 +340,22 @@ export default {
       })
     },
     createData () {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temp.author = 'vue-element-admin'
-          createArticle(this.temp).then(() => {
-            this.list.unshift(this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
-            })
-          })
-        }
+      delete this.temp.id
+      add_news(this.temp).then((res) => {
+        this.list.unshift(this.temp)
+        this.dialogFormVisible = false
+        this.$notify({
+          title: '成功',
+          message: '创建成功',
+          type: 'success',
+          duration: 2000
+        })
       })
     },
     handleUpdate (row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp)
+      // this.temp = Object.assign({}, row) // copy obj
+      this.resetTemp()
+      this.temp.id = row.id
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -327,41 +363,32 @@ export default {
       })
     },
     updateData () {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp)
-          updateArticle(tempData).then(() => {
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '更新成功',
-              type: 'success',
-              duration: 2000
-            })
-          })
+      add_news(this.temp).then(() => {
+        for (const v of this.list) {
+          if (v.id === this.temp.id) {
+            const index = this.list.indexOf(v)
+            this.list.splice(index, 1, this.temp)
+            break
+          }
         }
-      })
-    },
-    delNeed (row) {
-      console.log(row)
-      del_need({ id: row.id }).then(res => {
+        this.dialogFormVisible = false
         this.$notify({
           title: '成功',
-          message: '删除成功',
+          message: '更新成功',
           type: 'success',
           duration: 2000
         })
-        const index = this.list.indexOf(row)
-        this.list.splice(index, 1)
       })
+    },
+    handleDelete (row) {
+      this.$notify({
+        title: '成功',
+        message: '删除成功',
+        type: 'success',
+        duration: 2000
+      })
+      const index = this.list.indexOf(row)
+      this.list.splice(index, 1)
     },
     handleFetchPv (pv) {
       fetchPv(pv).then(response => {
@@ -395,3 +422,29 @@ export default {
   }
 }
 </script>
+
+<style scoped lang="less">
+/deep/.avatar-uploader .el-upload {
+  border: 1px dashed #000000;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+/deep/.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+/deep/.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+/deep/.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
+</style>

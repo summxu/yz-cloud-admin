@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-10 19:06:33
+ * @Last Modified time: 2019-07-14 21:05:19
  */
 <template>
   <div class="app-container">
@@ -59,7 +59,12 @@
       </el-table-column>
       <el-table-column label="头像" width="100px" align="center">
         <template slot-scope="scope">
-          <img class="user-avatar" :src="scope.row.avatar" alt />
+          <img
+            class="user-avatar"
+            style="width:50px;height:50px;"
+            :src="scope.row.avatar.preview_image"
+            alt
+          />
         </template>
       </el-table-column>
 

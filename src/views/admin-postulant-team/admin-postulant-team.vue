@@ -2,10 +2,44 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-13 16:05:32
+ * @Last Modified time: 2019-07-14 19:07:23
  */
 <template>
   <div class="app-container">
+    <div class="filter-container">
+      <!-- 条件查询 -->
+      <el-input
+        v-model="listQuery.name"
+        placeholder="请输入查询条件"
+        style="width: 300px;"
+        class="filter-item"
+        @keyup.enter.native="handleFilter"
+      />
+
+      <!-- 操作按钮 -->
+      <el-button
+        v-waves
+        class="filter-item"
+        type="primary"
+        icon="el-icon-search"
+        @click="handleFilter"
+      >{{ $t('table.search') }}</el-button>
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-edit"
+        @click="handleCreate"
+      >{{ $t('table.add') }}</el-button>
+      <el-button
+        v-waves
+        :loading="downloadLoading"
+        class="filter-item"
+        type="primary"
+        icon="el-icon-download"
+        @click="handleDownload"
+      >{{ $t('table.export') }}</el-button>
+    </div>
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -44,9 +78,15 @@
           <span>{{ scope.row.team_leader_id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="实践中心相册" width="100px" align="center">
+      <el-table-column label="实践中心相册" min-width="100px" align="center">
         <template slot-scope="scope">
-          <img :src="scope.row.album" alt />
+          <img
+            style="width:50px;height:50px;"
+            v-for="(item,index) in scope.row.album"
+            :key="index"
+            :src="item.preview_image"
+            alt
+          />
         </template>
       </el-table-column>
       <el-table-column label="创建时间" width="150px" align="center">
@@ -61,6 +101,8 @@
           <el-tag v-if="scope.row.status == 2" type="danger">已拒绝</el-tag>
         </template>
       </el-table-column>
+
+      <!-- 添加 -->
 
       <!-- 操作 -->
       <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
@@ -86,6 +128,39 @@
       @pagination="getList"
     />
 
+    <!-- 添加 -->
+    <el-dialog title="添加行政志愿者团队" :visible.sync="dialogFormVisible1">
+      <el-form
+        ref="dataForm"
+        :model="team"
+        label-position="right"
+        label-width="120px"
+        style="width: 400px; margin-left:50px;"
+      >
+        <el-form-item label="团队名称" prop="title">
+          <el-input v-model="team.team_name" />
+        </el-form-item>
+        <el-form-item label="团队简介描述" prop="title">
+          <el-input type="textarea" v-model="team.description" />
+        </el-form-item>
+
+        <el-form-item label="团队类别" prop="type">
+          <el-select v-model="team.type_id" multiple class="filter-item" placeholder="请选择">
+            <el-option
+              v-for="item in types"
+              :key="item.id"
+              :label="item.type_name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible1 = false">关闭</el-button>
+        <el-button type="primary" @click="add">添加</el-button>
+      </div>
+    </el-dialog>
+
     <!-- 模态窗 -->
     <el-dialog title="团队成员列表" :visible.sync="dialogFormVisible">
       <el-upload
@@ -93,6 +168,8 @@
         :show-file-list="false"
         action="http://yzj.yb.qqiang.net/admin/volunteers/upload_excel"
         :on-preview="handlePreview"
+        :on-success="success"
+        :on-error="error"
         :limit="1"
         :data="upData"
         :file-list="fileList"
@@ -102,9 +179,16 @@
       <el-table :data="numbers" style="width: 100%;" max-height="350" v-loading="numberLoading">
         <el-table-column label="序号" type="index" width="150" align="center"></el-table-column>
         <el-table-column prop="user_id" label="用户名：用户手机号" width="auto" align="left"></el-table-column>
-        <el-table-column label="审核状态" width="120" align="center">
-          <template slot-scope="scope">
-            <el-tag type="success">{{scope.row.status}}</el-tag>
+        <!-- caozuo  -->
+        <el-table-column
+          :label="$t('table.actions')"
+          align="center"
+          width="150"
+          class-name="small-padding fixed-width"
+        >
+          <template slot-scope="{row}">
+            <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button> -->
+            <el-button type="danger" size="mini" @click="delUser(row)">移除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -126,7 +210,7 @@
 </template>
 
 <script>
-import { volunteers_team, team_member, token, need_type, cat, volunteers_team_check, addVal, updateVal, delVal } from '@/api/yunzhijia'
+import { volunteers_team, remove_xzmember, team_member, token, need_type, cat, volunteers_team_check, addVal, add_xzteam, updateVal, delVal } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -164,22 +248,29 @@ export default {
   },
   data () {
     return {
+      team: {
+        team_name: '',
+        description: '',
+        type_id: ''
+      },
+      types: [],
       upData: {
-        token: getToken(),
         admin_id: getAdminId()
       },
       cats: [],
       numbers: [],
       dialogFormVisible: false,
+      dialogFormVisible1: false,
       tableKey: 0,
       list: null,
       total: 0,
       listLoading: true,
       numberLoading: true,
+      team_id: '',
       listQuery: {
         p: 1,
         row: 20,
-        type: 1
+        type: 2
       },
       calendarTypeOptions,
       statusOptions: ['published', 'draft', 'deleted'],
@@ -193,9 +284,50 @@ export default {
   created () {
     this.getList()
     this.getToken()
+    this.getNeedType()
   },
   methods: {
-
+    delUser (row) {
+      remove_xzmember({ user_id: row.id, team_id: this.team_id }).then(res => {
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+      })
+    },
+    /* 添加支援者 */
+    add () {
+      this.team.type_id = this.team.type_id.toString()
+      console.log(this.team);
+      add_xzteam(this.team).then(res => {
+        this.getList()
+        this.$message.success(res.msg)
+        this.dialogFormVisible1 = false
+        this.team = {
+          team_name: '',
+          description: '',
+          type_id: ''
+        }
+      })
+    },
+    getNeedType () {
+      need_type().then(res => {
+        this.types = res.result
+      })
+    },
+    handleCreate () {
+      this.dialogFormVisible1 = true
+    },
+    success (res, file) {
+      this.$message(res.msg)
+      this.dialogFormVisible = false
+    },
+    error (res, file) {
+      this.$message(res.msg)
+      this.dialogFormVisible = false
+    },
     /* 获取 七牛云token */
     getToken () {
       token().then(res => {
@@ -209,6 +341,9 @@ export default {
       team_member({ team_id: id, p: 1, row: 99999 }).then(response => {
         this.numbers = response.result.list
         this.numberLoading = false
+      }).catch(err => {
+        this.numberLoading = false
+
       })
     },
     agree (row) {
@@ -231,6 +366,7 @@ export default {
       this.numberLoading = true
       this.dialogFormVisible = true
       this.getNumber(e.id)
+      this.team_id = e.id
     },
     getList () {
       this.listLoading = true

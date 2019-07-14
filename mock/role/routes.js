@@ -106,7 +106,19 @@ export const asyncRoutes = [
       }
     ]
   },
-
+  {
+    path: '',
+    redirect: 'admin-postulant-team',
+    meta: { title: '行政志愿者团队', icon: 'example' },
+    children: [
+      {
+        path: 'admin-postulant-team',
+        component: () => import('@/views/admin-postulant-team/admin-postulant-team'),
+        name: 'admin-postulant-team',
+        meta: { title: '行政志愿者团队', affix: true }
+      }
+    ]
+  },
   /* 权限 */
   {
     path: '/permission',

@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 17:00:12 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-13 16:05:12
+ * @Last Modified time: 2019-07-14 18:15:33
  */
 import request from '@/utils/request'
 
@@ -201,7 +201,7 @@ export function del_need (data) {
 /* token */
 export function token (data) {
   return request({
-    url: '/pc/upload/token',
+    url: '/admin/index/token',
     method: 'get',
     params: data
   })
@@ -214,5 +214,126 @@ export function cat (data) {
     url: '/admin/fast_url/cat',
     method: 'get',
     params: data
+  })
+}
+export function updateCat (data) {
+  return request({
+    url: '/admin/fast_url/cat',
+    method: 'put',
+    data
+  })
+}
+export function addCat (data) {
+  return request({
+    url: '/admin/fast_url/cat',
+    method: 'post',
+    data
+  })
+}
+export function delCat (data) {
+  return request({
+    url: '/admin/fast_url/cat',
+    method: 'delete',
+    params: data
+  })
+}
+
+/* 需求置顶 */
+export function need_top (data) {
+  return request({
+    url: '/admin/need/need_top',
+    method: 'post',
+    data
+  })
+}
+
+/* 行政志愿者团队添加 */
+export function add_xzteam (data) {
+  return request({
+    url: '/admin/Volunteers/add_xzteam',
+    method: 'post',
+    data
+  })
+}
+
+
+/* 新闻 */
+
+export function news_index (data) {
+  return request({
+    url: '/admin/index/news_index',
+    method: 'post',
+    data
+  })
+}
+export function add_news (data) {
+  return request({
+    url: '/admin/index/add_news',
+    method: 'post',
+    data
+  })
+}
+export function del_news (data) {
+  return request({
+    url: '/admin/index/del_news',
+    method: 'post',
+    data
+  })
+}
+
+/* 管理员管理 */
+
+export function add_admin (data) {
+  return request({
+    url: '/admin/User/add_admin',
+    method: 'post',
+    data
+  })
+}
+export function admin_info (data) {
+  return request({
+    url: '/admin/User/admin_info',
+    method: 'post',
+    data
+  })
+}
+export function admin_index (data) {
+  return request({
+    url: '/admin/user/admin_index',
+    method: 'get',
+    params: data
+  })
+}
+export function update_admin (data) {
+  return request({
+    url: '/admin/User/update_admin',
+    method: 'post',
+    data
+  })
+}
+export function open_free_admin (data) {
+  return request({
+    url: '/admin/User/open_free_admin',
+    method: 'post',
+    data
+  })
+}
+
+
+export function role_index (data) {
+  return request({
+    url: '/admin/User/role_index',
+    method: 'post',
+    data
+  })
+}
+
+
+/* 菜单列表规则 */
+export function auth (data) {
+  return request({
+    url: '/admin/Index/auth',
+    method: 'post',
+    data
   })
 }

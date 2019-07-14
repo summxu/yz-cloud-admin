@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-11 11:48:09
+ * @Last Modified time: 2019-07-14 21:05:46
  */
 <template>
   <div class="app-container">
@@ -69,7 +69,12 @@
       </el-table-column>
       <el-table-column label="头像" width="100px" align="center">
         <template slot-scope="scope">
-          <img class="user-avatar" :src="scope.row.avatar" alt />
+          <img
+            class="user-avatar"
+            style="width:50px;height:50px;"
+            :src="scope.row.avatar.preview_image"
+            alt
+          />
         </template>
       </el-table-column>
 
@@ -131,7 +136,7 @@
       >
         <template slot-scope="{row}">
           <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button> -->
-          <el-button type="danger" size="mini" @click="delUser(row)">移除</el-button>
+          <!-- <el-button type="danger" size="mini" @click="delUser(row)">移除</el-button> -->
         </template>
       </el-table-column>
     </el-table>
@@ -290,6 +295,16 @@ export default {
     this.getArea()
   },
   methods: {
+    delUser (row) {
+      remove_xzmember({ team_id: row.id }).then(res => {
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+      })
+    },
     /* 获取地理位置 */
     getArea () {
       get_area().then(response => {
