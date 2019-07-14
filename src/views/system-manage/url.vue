@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-10 21:37:14
+ * @Last Modified time: 2019-07-13 16:51:45
  */
 <template>
   <div class="app-container">
@@ -73,6 +73,16 @@
           <span>{{ scope.row.url }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="icon图标" width="200px" align="center">
+        <template slot-scope="scope">
+          <img :src="scope.row.url.image" alt />
+        </template>
+      </el-table-column>
+      <el-table-column label="排序" width="200px" align="center">
+        <template slot-scope="scope">
+          <img :src="scope.row.sort" alt />
+        </template>
+      </el-table-column>
       <el-table-column label="分类名" min-width="100px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.cat_name }}</span>
@@ -118,17 +128,16 @@
         <el-form-item label="快捷url" prop="title">
           <el-input v-model="temp.url" />
         </el-form-item>
+        <el-form-item label="图标" prop="title">
+          <el-input v-model="temp.image" />
+        </el-form-item>
+
         <el-form-item label="排序" prop="title">
           <el-input v-model="temp.sort" />
         </el-form-item>
         <el-form-item label="快捷分类" prop="type">
           <el-select v-model="temp.cat_id" class="filter-item" placeholder="请选择">
-            <el-option
-              v-for="item in cats"
-              :key="item.key"
-              :label="item.display_name"
-              :value="item.key"
-            />
+            <el-option v-for="item in cats" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -154,7 +163,7 @@
 </template>
 
 <script>
-import { getVal, addVal, updateVal, delVal } from '@/api/yunzhijia'
+import { getVal, addVal, updateVal, delVal, cat } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -194,6 +203,7 @@ export default {
       tableKey: 0,
       list: null,
       total: 0,
+      cats: [],
       listLoading: true,
       listQuery: {
         p: 1,
@@ -204,11 +214,12 @@ export default {
       statusOptions: ['published', 'draft', 'deleted'],
       temp: {
         id: undefined,
-        name: 1,
+        name: '',
         url: '',
         sort: '',
         cat_id: '',
-        status: 0
+        status: 1,
+        image: ''
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -228,8 +239,31 @@ export default {
   },
   created () {
     this.getList()
+    this.getCat()
   },
   methods: {
+    delUser (row) {
+      delVal({ id: row.id }).then(res => {
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.getList()
+      })
+    },
+    getCat () {
+      let params = {
+        p: 1,
+        row: 20,
+        order: 'url.id desc',
+      }
+      cat(params).then(res => {
+        this.cats = res.result
+        console.log(res);
+      })
+    },
     getList () {
       this.listLoading = true
       getVal(this.listQuery).then(response => {
@@ -260,10 +294,12 @@ export default {
     resetTemp () {
       this.temp = {
         id: undefined,
-        name: 1,
+        name: '',
         url: '',
         sort: '',
-        cat_id: ''
+        cat_id: '',
+        status: 1,
+        image: ''
       }
     },
     handleCreate () {
@@ -275,26 +311,21 @@ export default {
       })
     },
     createData () {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temp.author = 'vue-element-admin'
-          createArticle(this.temp).then(() => {
-            this.list.unshift(this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
-            })
-          })
-        }
+      addVal(this.temp).then((res) => {
+        this.list.unshift(this.temp)
+        this.dialogFormVisible = false
+        this.$notify({
+          title: '成功',
+          message: '创建成功',
+          type: 'success',
+          duration: 2000
+        })
       })
     },
     handleUpdate (row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp)
+      // this.temp = Object.assign({}, row) // copy obj
+      this.resetTemp()
+      this.temp.id = row.id
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -302,27 +333,21 @@ export default {
       })
     },
     updateData () {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp)
-          updateArticle(tempData).then(() => {
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '更新成功',
-              type: 'success',
-              duration: 2000
-            })
-          })
+      updateVal(this.temp).then(() => {
+        for (const v of this.list) {
+          if (v.id === this.temp.id) {
+            const index = this.list.indexOf(v)
+            this.list.splice(index, 1, this.temp)
+            break
+          }
         }
+        this.dialogFormVisible = false
+        this.$notify({
+          title: '成功',
+          message: '更新成功',
+          type: 'success',
+          duration: 2000
+        })
       })
     },
     handleDelete (row) {

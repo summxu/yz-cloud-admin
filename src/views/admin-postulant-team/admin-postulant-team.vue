@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-10 19:31:41
+ * @Last Modified time: 2019-07-13 16:05:32
  */
 <template>
   <div class="app-container">
@@ -88,6 +88,17 @@
 
     <!-- 模态窗 -->
     <el-dialog title="团队成员列表" :visible.sync="dialogFormVisible">
+      <el-upload
+        class="upload-demo"
+        :show-file-list="false"
+        action="http://yzj.yb.qqiang.net/admin/volunteers/upload_excel"
+        :on-preview="handlePreview"
+        :limit="1"
+        :data="upData"
+        :file-list="fileList"
+      >
+        <el-button size="small" type="primary">导入数据</el-button>
+      </el-upload>
       <el-table :data="numbers" style="width: 100%;" max-height="350" v-loading="numberLoading">
         <el-table-column label="序号" type="index" width="150" align="center"></el-table-column>
         <el-table-column prop="user_id" label="用户名：用户手机号" width="auto" align="left"></el-table-column>
@@ -115,11 +126,12 @@
 </template>
 
 <script>
-import { volunteers_team, team_member, volunteers_team_check } from '@/api/yunzhijia'
+import { volunteers_team, team_member, token, need_type, cat, volunteers_team_check, addVal, updateVal, delVal } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-
+import axios from "@/utils/request";
+import { getToken, getAdminId } from '@/utils/auth'
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
   { key: 'US', display_name: 'USA' },
@@ -152,6 +164,11 @@ export default {
   },
   data () {
     return {
+      upData: {
+        token: getToken(),
+        admin_id: getAdminId()
+      },
+      cats: [],
       numbers: [],
       dialogFormVisible: false,
       tableKey: 0,
@@ -169,13 +186,25 @@ export default {
 
       dialogPvVisible: false,
       pvData: [],
-      downloadLoading: false
+      downloadLoading: false,
+      fileList: []
     }
   },
   created () {
     this.getList()
+    this.getToken()
   },
   methods: {
+
+    /* 获取 七牛云token */
+    getToken () {
+      token().then(res => {
+        this.upData.token = res.result
+      })
+    },
+    handlePreview (file) {
+      console.log(file);
+    },
     getNumber (id) {
       team_member({ team_id: id, p: 1, row: 99999 }).then(response => {
         this.numbers = response.result.list

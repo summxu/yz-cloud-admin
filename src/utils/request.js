@@ -24,19 +24,18 @@ service.interceptors.request.use(
       const token = getToken()
       const admin_id = getAdminId()
 
-      if (config.method === 'post') {
-        let data = qs.parse(config.data)
+      if (config.method === 'post' || config.method === 'put') {
 
         config.data = qs.stringify({
           token: token,
           admin_id: admin_id,
-          ...data
-        })
-      } else if (config.method === 'get') {
-        config.params = {
-          // token: token,
-          // admin_id: admin_id,
           ...config.data
+        })
+      } else if (config.method === 'get' || config.method === 'delete') {
+        config.params = {
+          token: token,
+          admin_id: admin_id,
+          ...config.params
         }
       }
     }
