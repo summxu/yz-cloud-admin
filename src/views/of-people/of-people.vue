@@ -106,7 +106,7 @@
             type="success"
             @click="handleUpdate(row)"
           >回复</el-button>
-          <el-button type="danger" @click="delNeed(row)">删除</el-button>
+          <el-button type="danger" size="mini" @click="delNeed(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>

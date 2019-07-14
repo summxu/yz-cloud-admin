@@ -211,12 +211,12 @@ export const asyncRoutes = [
     redirect: 'system-manage/ads',
     meta: { title: '系统管理', icon: 'component' },
     children: [
-      {
-        path: 'system-manage/ads',
-        component: () => import('@/views/system-manage/ads'),
-        name: 'ads',
-        meta: { title: '广告管理', affix: true }
-      },
+      // {
+      //   path: 'system-manage/ads',
+      //   component: () => import('@/views/system-manage/ads'),
+      //   name: 'ads',
+      //   meta: { title: '广告管理', affix: true }
+      // },
       {
         path: 'system-manage/site-option',
         component: () => import('@/views/system-manage/site-option'),

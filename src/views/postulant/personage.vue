@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-14 21:05:19
+ * @Last Modified time: 2019-07-14 21:32:06
  */
 <template>
   <div class="app-container">
@@ -100,7 +100,7 @@
       </el-table-column>
       <el-table-column label="所属团队" min-width="100px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.team_name }} 天</span>
+          <span>{{ scope.row.team_name }}</span>
         </template>
       </el-table-column>
 

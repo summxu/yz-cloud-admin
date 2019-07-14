@@ -1,5 +1,5 @@
 module.exports = {
-  title: '亿佰网络',
+  title: '兖州云之家-后台管理',
 
   /**
    * @type {boolean} true | false

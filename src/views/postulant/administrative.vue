@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-14 21:05:46
+ * @Last Modified time: 2019-07-14 21:34:29
  */
 <template>
   <div class="app-container">
@@ -110,7 +110,7 @@
       </el-table-column>
       <el-table-column label="所属团队" min-width="100px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.team_name }} 天</span>
+          <span>{{ scope.row.team_name }}</span>
         </template>
       </el-table-column>
 
@@ -127,7 +127,7 @@
       </el-table-column>
 
       <!-- 操作 -->
-
+      <!-- 
       <el-table-column
         :label="$t('table.actions')"
         align="center"
@@ -135,10 +135,10 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
-          <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button> -->
-          <!-- <el-button type="danger" size="mini" @click="delUser(row)">移除</el-button> -->
+          <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
+          <el-button type="danger" size="mini" @click="delUser(row)">移除</el-button>
         </template>
-      </el-table-column>
+      </el-table-column>-->
     </el-table>
 
     <!-- 分页 -->
