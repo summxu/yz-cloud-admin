@@ -146,7 +146,6 @@ export const asyncRoutes = [
         name: 'DirectivePermission',
         meta: {
           title: '管理员管理'
-          // if do not set roles, means: this page does not require permission
         }
       }
     ]

@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-15 16:20:05
+ * @Last Modified time: 2019-07-15 16:19:41
  */
 <template>
   <div class="app-container">
@@ -14,6 +14,7 @@
       fit
       highlight-current-row
       style="width: 100%;"
+      height="800"
       @sort-change="sortChange"
     >
       <el-table-column
@@ -23,34 +24,88 @@
         width="80"
         type="index"
       ></el-table-column>
-      <el-table-column label="团队名称" min-width="100px">
+      <el-table-column label="需求名称" min-width="120px">
         <template slot-scope="{row}">
-          <span>{{ row.team_name }}</span>
+          <span>{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="所属类型" min-width="150px" align="center">
+      <el-table-column label="申请方名称" min-width="100px" align="center">
         <template slot-scope="scope">
-          <span>{{scope.row.type_id.toString()}}</span>
+          <span>{{ scope.row.apply_name }}</span>
+          <!-- <span>{{scope.row.type_id.toString()}}</span> -->
         </template>
       </el-table-column>
 
-      <el-table-column label="团队简介" min-width="150px" align="center">
+      <el-table-column label="申请方 姓名：电话" min-width="150px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.description }}</span>
+          <span>{{ scope.row.apply_user_id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="团队长姓名和电话" min-width="100px" align="center">
+      <el-table-column label="区域" min-width="100px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.team_leader_id }}</span>
+          <span>{{ scope.row.area_id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="实践中心相册" min-width="100px" align="center">
+
+      <el-table-column label="详细地址" min-width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.address }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="需求详情" min-width="180px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.detail }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="开始时间" min-width="150px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.start_time }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="结束时间" min-width="150px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.end_time }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="需求人数" min-width="70px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.people_count }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="上级区域" min-width="70px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.up_area_id }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="奖励状态" min-width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.has_reward }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="需求类型" min-width="100px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.need_type_id.toString() }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="反馈问题" min-width="120px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.problem }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="反馈时间" min-width="70px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.com_time }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="图片组" min-width="100px" align="center">
         <template slot-scope="scope">
           <img
             style="width:50px;height:50px;"
-            v-for="(item,index) in scope.row.album"
-            :key="index"
+            v-for="(item,index) in scope.row.images"
             :src="item.preview_image"
+            :key="index"
             alt
           />
         </template>
@@ -60,25 +115,18 @@
           <span>{{ scope.row.createtime }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="审核状态" width="100px" align="center">
+      <el-table-column label="状态" width="100" align="center">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.status == 0" type="warning">未审核</el-tag>
-          <el-tag v-if="scope.row.status == 1" type="success">已通过</el-tag>
-          <el-tag v-if="scope.row.status == 2" type="danger">已拒绝</el-tag>
+          <el-tag v-if="scope.row.status == '招募中'" type="success">{{scope.row.status}}</el-tag>
+          <el-tag v-if="scope.row.status == '审核中'">{{scope.row.status}}</el-tag>
+          <el-tag v-if="scope.row.status == '撤销'" type="danger">{{scope.row.status}}</el-tag>
         </template>
       </el-table-column>
 
       <!-- 操作 -->
-      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="80" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
-          <el-button
-            v-if="row.status == 1"
-            type="primary"
-            size="mini"
-            @click="viewNumbers(row)"
-          >查看团队成员</el-button>
-          <el-button v-if="!row.status" type="success" size="mini" @click="agree(row)">通过</el-button>
-          <el-button v-if="!row.status" type="danger" size="mini" @click="reject(row)">拒绝</el-button>
+          <el-button type="primary" size="mini" @click="feedback(row)">反馈</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -87,7 +135,7 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="listQuery.page"
+      :page.sync="listQuery.p"
       :limit.sync="listQuery.row"
       @pagination="getList"
     />
@@ -97,6 +145,10 @@
       <el-table :data="numbers" style="width: 100%;" max-height="350" v-loading="numberLoading">
         <el-table-column label="序号" type="index" width="150" align="center"></el-table-column>
         <el-table-column prop="user_id" label="用户名：用户手机号" width="auto" align="left"></el-table-column>
+        <el-table-column prop="has_reward" label="奖励状态" width="auto" align="left"></el-table-column>
+        <el-table-column prop="reward_time" label="奖励时长" width="auto" align="left"></el-table-column>
+        <el-table-column prop="sign_in" label="签到时间" width="auto" align="left"></el-table-column>
+        <el-table-column prop="sign_out" label="签退时间" width="auto" align="left"></el-table-column>
         <el-table-column label="审核状态" width="120" align="center">
           <template slot-scope="scope">
             <el-tag type="success">{{scope.row.status}}</el-tag>
@@ -121,7 +173,7 @@
 </template>
 
 <script>
-import { volunteers_team, team_member, volunteers_team_check } from '@/api/yunzhijia'
+import { task, check_need, need_member, ce_need, com_task, need_top } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -140,7 +192,7 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 }, {})
 
 export default {
-  name: 'postulant-team',
+  name: 'task',
   components: { Pagination },
   directives: { waves },
   filters: {
@@ -167,12 +219,10 @@ export default {
       numberLoading: true,
       listQuery: {
         p: 1,
-        row: 20,
-        type: 1
+        row: 20
       },
       calendarTypeOptions,
       statusOptions: ['published', 'draft', 'deleted'],
-
       dialogPvVisible: false,
       pvData: [],
       downloadLoading: false
@@ -182,26 +232,35 @@ export default {
     this.getList()
   },
   methods: {
-    getNumber (id) {
-      team_member({ team_id: id, p: 1, row: 99999 }).then(response => {
-        this.numbers = response.result.list
-        this.numberLoading = false
+    top (row, top) {
+      need_top({ top: top, id: row.id }).then(res => {
+        this.getList()
+        this.$message({
+          type: 'success',
+          message: res.msg
+        })
       })
     },
-    agree (row) {
-      volunteers_team_check({ team_id: row.id, status: 1 }).then(res => {
-        let tempArr = this.list.filter(item => {
-          return item.id == row.id
-        })
-        tempArr[0].status = 1
+    getNumber (id) {
+      need_member({ id: id, p: 1, row: 99999 }).then(response => {
+        this.numbers = response.result.list
+        this.numberLoading = false
+      }).catch(err => {
+        this.listLoading = false
+      })
+    },
+    feedback (row) {
+      com_task({ id: row.id, problem: 'Exple' }).then(res => {
+        console.log(res);
       })
     },
     reject (row) {
-      volunteers_team_check({ team_id: row.id, status: 2 }).then(res => {
+      ce_need({ id: row.id }).then(res => {
         let tempArr = this.list.filter(item => {
           return item.id == row.id
         })
-        tempArr[0].status = 2
+        tempArr[0].status = "撤销"
+
       })
     },
     viewNumbers (e) {
@@ -211,7 +270,7 @@ export default {
     },
     getList () {
       this.listLoading = true
-      volunteers_team(this.listQuery).then(response => {
+      task(this.listQuery).then(response => {
         this.list = response.result.list
         this.total = response.result.count
         this.listLoading = false
@@ -220,7 +279,7 @@ export default {
       })
     },
     handleFilter () {
-      this.listQuery.page = 1
+      this.listQuery.p = 1
       this.getList()
     },
 

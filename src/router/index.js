@@ -118,6 +118,20 @@ export const asyncRoutes = [
   {
     path: '',
     component: Layout,
+    redirect: 'task',
+    meta: { title: '待处理任务', icon: 'message' },
+    children: [
+      {
+        path: 'task',
+        component: () => import('@/views/task/task'),
+        name: 'task',
+        meta: { title: '待处理任务', affix: true }
+      }
+    ]
+  },
+  {
+    path: '',
+    component: Layout,
     redirect: 'of-people',
     meta: { title: '便民需求', icon: 'message' },
     children: [
@@ -129,6 +143,7 @@ export const asyncRoutes = [
       }
     ]
   },
+
   {
     path: '',
     component: Layout,

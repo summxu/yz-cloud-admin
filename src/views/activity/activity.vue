@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-14 21:06:26
+ * @Last Modified time: 2019-07-15 16:19:29
  */
 <template>
   <div class="app-container">
@@ -140,7 +140,7 @@
       v-show="total>0"
       :total="total"
       :page.sync="listQuery.p"
-      :limit.sync="listQuery.limit"
+      :limit.sync="listQuery.row"
       @pagination="getList"
     />
 

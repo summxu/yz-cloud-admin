@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 17:00:12 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-14 18:15:33
+ * @Last Modified time: 2019-07-15 14:17:23
  */
 import request from '@/utils/request'
 
@@ -333,6 +333,23 @@ export function role_index (data) {
 export function auth (data) {
   return request({
     url: '/admin/Index/auth',
+    method: 'post',
+    data
+  })
+}
+
+/* 菜单列表规则 */
+export function task (data) {
+  return request({
+    url: '/admin/need/task',
+    method: 'post',
+    data
+  })
+}
+
+export function com_task (data) {
+  return request({
+    url: '/admin/need/com_task',
     method: 'post',
     data
   })
