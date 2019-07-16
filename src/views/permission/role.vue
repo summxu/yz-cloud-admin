@@ -3,14 +3,14 @@
     <el-button type="primary" @click="handleAddRole">{{ $t('permission.addRole') }}</el-button>
 
     <el-table :data="rolesList" style="width: 100%;margin-top:30px;" border>
-      <!-- <el-table-column align="center" label="角色名" width="220">
-        <template slot-scope="scope">{{ scope.row.key }}</template>
-      </el-table-column>-->
+      <el-table-column align="center" label="角色ID" width="220">
+        <template slot-scope="scope">{{ scope.row.id }}</template>
+      </el-table-column>
       <el-table-column align="center" label="角色名字" width="220">
-        <template slot-scope="scope">{{ scope.row.name }}</template>
+        <template slot-scope="scope">{{ scope.row.title }}</template>
       </el-table-column>
       <el-table-column align="header-center" label="角色描述">
-        <template slot-scope="scope">{{ scope.row.description }}</template>
+        <template slot-scope="scope">{{ scope.row.content }}</template>
       </el-table-column>
       <el-table-column align="center" label="操作">
         <template slot-scope="scope">
@@ -31,11 +31,11 @@
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit Role':'New Role'">
       <el-form :model="role" label-width="80px" label-position="left">
         <el-form-item label="名字">
-          <el-input v-model="role.name" placeholder="角色名字" />
+          <el-input v-model="role.title" placeholder="角色名字" />
         </el-form-item>
         <el-form-item label="角色简述">
           <el-input
-            v-model="role.description"
+            v-model="role.content"
             :autosize="{ minRows: 2, maxRows: 4}"
             type="textarea"
             placeholder="在此输入角色简述"
@@ -64,7 +64,10 @@
 <script>
 import path from 'path'
 import { deepClone } from '@/utils'
+/* 此处 getRoutes 就为正常路由 */
 import { getRoutes, getRoles, addRole, deleteRole, updateRole } from '@/api/role'
+import { role_index, edit_role } from "@/api/yunzhijia";
+import { asyncRoutes, constantRoutes } from '@/router'
 import i18n from '@/lang'
 
 const defaultRole = {
@@ -101,14 +104,19 @@ export default {
   },
   methods: {
     async getRoutes () {
-      const res = await getRoutes()
-      this.serviceRoutes = res.data
-      const routes = this.generateRoutes(res.data)
-      this.routes = this.i18n(routes)
+      // const res = await getRoutes()
+
+      // this.serviceRoutes = res.data
+      // const routes = this.generateRoutes(res.data)
+
+      this.serviceRoutes = asyncRoutes
+      const routes = this.generateRoutes(asyncRoutes)
+
+      this.routes = routes
     },
     async getRoles () {
-      const res = await getRoles()
-      this.rolesList = res.data
+      const res = await role_index({ p: 1, row: 200 })
+      this.rolesList = res.result.list
     },
     i18n (routes) {
       const app = routes.map(route => {
@@ -121,6 +129,7 @@ export default {
       return app
     },
     // Reshape the routes structure so that it looks the same as the sidebar
+    /* 路由处理函数 */
     generateRoutes (routes, basePath = '/') {
       const res = []
 
@@ -137,7 +146,6 @@ export default {
         const data = {
           path: path.resolve(basePath, route.path),
           title: route.meta && route.meta.title
-
         }
 
         // recursive child routes
@@ -197,7 +205,7 @@ export default {
         })
         .catch(err => { console.error(err) })
     },
-    generateTree (routes, basePath = '/', checkedKeys) {
+    generateTree (routes, basePath = '/postulant', checkedKeys) {
       const res = []
 
       for (const route of routes) {
@@ -218,10 +226,12 @@ export default {
       const isEdit = this.dialogType === 'edit'
 
       const checkedKeys = this.$refs.tree.getCheckedKeys()
-      this.role.routes = this.generateTree(deepClone(this.serviceRoutes), '/', checkedKeys)
+      this.role.routes = this.generateTree(deepClone(this.serviceRoutes), '/postulant', checkedKeys)
+
+      console.log(checkedKeys);
 
       if (isEdit) {
-        await updateRole(this.role.key, this.role)
+        await edit_role({ id: this.role.id, content: checkedKeys.toString(), title: this.role.title })
         for (let index = 0; index < this.rolesList.length; index++) {
           if (this.rolesList[index].key === this.role.key) {
             this.rolesList.splice(index, 1, Object.assign({}, this.role))

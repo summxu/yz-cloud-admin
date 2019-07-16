@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-15 16:20:28
+ * @Last Modified time: 2019-07-16 20:37:18
  */
 <template>
   <div class="app-container">
@@ -114,7 +114,7 @@
     />
 
     <!-- 模态窗 -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog class="model" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form
         ref="dataForm"
         :model="temp"
@@ -125,8 +125,12 @@
         <el-form-item label="标题" prop="title">
           <el-input v-model="temp.title" />
         </el-form-item>
+
+        <el-form-item label="所属区域" prop="id">
+          <el-cascader v-model="temp.area_id" :options="areaList"></el-cascader>
+        </el-form-item>
         <el-form-item label="内容" prop="title">
-          <el-input type="textarea" v-model="temp.content" />
+          <el-input type="textarea" rows="10" v-model="temp.content" />
         </el-form-item>
         <el-form-item label="图片" prop="title">
           <el-upload
@@ -148,7 +152,7 @@
             :inactive-value="0"
             v-model="temp.is_top"
             active-color="#13ce66"
-            inactive-color="#ff4949"
+            inactive-color="#DCDFE6"
           ></el-switch>
         </el-form-item>
       </el-form>
@@ -174,7 +178,7 @@
 </template>
 
 <script>
-import { news_index, add_news, del_news, cat, token } from '@/api/yunzhijia'
+import { news_index, add_news, del_news, get_area, cat, token } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -211,6 +215,7 @@ export default {
   },
   data () {
     return {
+      areaList: [],
       images: '',
       upData: {
         token: ""
@@ -228,10 +233,11 @@ export default {
       calendarTypeOptions,
       statusOptions: ['published', 'draft', 'deleted'],
       temp: {
+        area_id: '',
         id: null,
         title: '',
         content: '',
-        is_top: 1,
+        is_top: 0,
         image: ''
       },
       dialogFormVisible: false,
@@ -254,6 +260,7 @@ export default {
     this.getList()
     this.getCat()
     this.getToken()
+    this.getArea()
   },
   methods: {
     handleAvatarSuccess (res, file) {
@@ -266,6 +273,14 @@ export default {
         this.$message.error("上传头像图片大小不能超过 2MB!");
       }
       return isLt2M;
+    },
+    /* 获取地理位置 */
+    getArea () {
+      get_area().then(response => {
+        // this.areaList = response.result
+        this.areaList.push(response.result)
+        // console.log();
+      })
     },
     /* 获取 七牛云token */
     getToken () {
@@ -325,9 +340,10 @@ export default {
     resetTemp () {
       this.temp = {
         id: null,
+        area_id: '',
         title: '',
         content: '',
-        is_top: 1,
+        is_top: 0,
         image: ''
       }
     },
@@ -341,6 +357,7 @@ export default {
     },
     createData () {
       delete this.temp.id
+      this.temp.area_id = this.temp.area_id[2]
       add_news(this.temp).then((res) => {
         this.list.unshift(this.temp)
         this.dialogFormVisible = false
@@ -446,5 +463,13 @@ export default {
   width: 178px;
   height: 178px;
   display: block;
+}
+
+/deep/.model .el-input__inner,
+/deep/.model .el-textarea__inner,
+/deep/.model .el-select .el-input__inner,
+/deep/.model .el-cascader .el-input__inner {
+  width: 700px;
+  // width: 100%;
 }
 </style>

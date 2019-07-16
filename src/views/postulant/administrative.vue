@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-15 16:18:46
+ * @Last Modified time: 2019-07-16 20:26:13
  */
 <template>
   <div class="app-container">
@@ -127,7 +127,7 @@
       </el-table-column>
 
       <!-- 操作 -->
-      <!-- 
+
       <el-table-column
         :label="$t('table.actions')"
         align="center"
@@ -135,10 +135,10 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
+          <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button> -->
           <el-button type="danger" size="mini" @click="delUser(row)">移除</el-button>
         </template>
-      </el-table-column>-->
+      </el-table-column>
     </el-table>
 
     <!-- 分页 -->
@@ -151,7 +151,7 @@
     />
 
     <!-- 模态窗 -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog class="model" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form
         ref="dataForm"
         :model="temp"
@@ -273,7 +273,7 @@ export default {
         password: '',
         mobile: '',
         identity_card: '',
-        type: '',
+        type: '2',
         team_id: '',
         area_id: []
       },
@@ -296,13 +296,14 @@ export default {
   },
   methods: {
     delUser (row) {
-      remove_xzmember({ team_id: row.id }).then(res => {
+      remove_xzmember({ user_id: row.id, team_id: row.team_id }).then(res => {
         this.$notify({
           title: '成功',
           message: '删除成功',
           type: 'success',
           duration: 2000
         })
+        this.getList()
       })
     },
     /* 获取地理位置 */
@@ -318,7 +319,7 @@ export default {
       volunteers_team({
         p: 1,
         row: 20,
-        type: 1
+        type: 2
       }).then(response => {
         response.result.list.forEach(item => {
           teamList.push({ key: item.id, display_name: item.team_name })
@@ -334,6 +335,7 @@ export default {
         this.dialogFormVisible = false
         this.getList()
       })
+      this.dialogFormVisible = false
     },
     getList () {
       this.listLoading = true
@@ -476,5 +478,10 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
+/deep/.model .el-select .el-input__inner,
+/deep/.model .el-cascader .el-input__inner {
+  width: 278px;
+  // width: 100%;
+}
 </style>

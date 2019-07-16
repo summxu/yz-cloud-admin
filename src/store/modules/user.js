@@ -1,6 +1,7 @@
 import { login, logout, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken, getAdminId, setAdminId, removeAdminId } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
+/* 这里给的是假路由 */
 
 const state = {
   token: getToken(),
@@ -8,7 +9,8 @@ const state = {
   name: '',
   avatar: '',
   introduction: '',
-  roles: []
+  roles: [],
+  routers: []
 }
 
 const mutations = {
@@ -29,6 +31,9 @@ const mutations = {
   },
   SET_ROLES: (state, roles) => {
     state.roles = roles
+  },
+  SET_ROUTERS: (state, routers) => {
+    state.routers = routers
   }
 }
 
@@ -61,7 +66,7 @@ const actions = {
         }
         /* 假数据 */
         const data = {
-          roles: ['admin'],
+          roles: ['1'],
           introduction: 'I am a super administrator',
           avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
           name: 'Super Admin'

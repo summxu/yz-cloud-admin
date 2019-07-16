@@ -1,5 +1,20 @@
-// 在此获取的路由
+/* 
+
+此处为获取左侧菜单栏的列表
+
+ */
 import { asyncRoutes, constantRoutes } from '@/router'
+import { getInfo } from "@/api/user";
+
+
+/* 处理路由树 */
+function handleTree (array) {
+  array.forEach(item => {
+    asyncRoutes.forEach(element => {
+      // if (element.path == item.)
+    })
+  })
+}
 
 /**
  * Use meta.role to determine if the current user has permission
@@ -48,7 +63,11 @@ const mutations = {
 }
 
 const actions = {
-  generateRoutes ({ commit }, roles) {
+  async generateRoutes ({ commit }, roles) {
+    let routerTree = await getInfo()
+    // let asyncRoutes = handleTree(routerTree.result)
+    /* 获取到权限处理路由树 */
+
     return new Promise(resolve => {
       let accessedRoutes
       if (roles.includes('admin')) {

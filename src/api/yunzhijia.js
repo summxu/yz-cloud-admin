@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 17:00:12 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-15 14:17:23
+ * @Last Modified time: 2019-07-16 16:50:56
  */
 import request from '@/utils/request'
 
@@ -328,7 +328,6 @@ export function role_index (data) {
   })
 }
 
-
 /* 菜单列表规则 */
 export function auth (data) {
   return request({
@@ -354,3 +353,12 @@ export function com_task (data) {
     data
   })
 }
+
+export function edit_role (data) {
+  return request({
+    url: '/admin/User/edit_role',
+    method: 'post',
+    data
+  })
+}
+

@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-15 16:19:41
+ * @Last Modified time: 2019-07-15 16:38:08
  */
 <template>
   <div class="app-container">
@@ -141,33 +141,16 @@
     />
 
     <!-- 模态窗 -->
-    <el-dialog title="团队成员列表" :visible.sync="dialogFormVisible">
-      <el-table :data="numbers" style="width: 100%;" max-height="350" v-loading="numberLoading">
-        <el-table-column label="序号" type="index" width="150" align="center"></el-table-column>
-        <el-table-column prop="user_id" label="用户名：用户手机号" width="auto" align="left"></el-table-column>
-        <el-table-column prop="has_reward" label="奖励状态" width="auto" align="left"></el-table-column>
-        <el-table-column prop="reward_time" label="奖励时长" width="auto" align="left"></el-table-column>
-        <el-table-column prop="sign_in" label="签到时间" width="auto" align="left"></el-table-column>
-        <el-table-column prop="sign_out" label="签退时间" width="auto" align="left"></el-table-column>
-        <el-table-column label="审核状态" width="120" align="center">
-          <template slot-scope="scope">
-            <el-tag type="success">{{scope.row.status}}</el-tag>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">关闭</el-button>
-      </div>
-    </el-dialog>
-
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel" />
-        <el-table-column prop="pv" label="Pv" />
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">{{ $t('table.confirm') }}</el-button>
-      </span>
+    <el-dialog title="反馈内容" :visible.sync="dialogFormVisible">
+      <el-form ref="numberValidateForm" label-width="100px" class="demo-ruleForm">
+        <el-form-item label="反馈内容">
+          <el-input type="textarea" v-model.number="feedContent"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="feedbackUp">提交</el-button>
+          <el-button @click="dialogFormVisible =!dialogFormVisible">取消</el-button>
+        </el-form-item>
+      </el-form>
     </el-dialog>
   </div>
 </template>
@@ -185,7 +168,6 @@ const calendarTypeOptions = [
   { key: 'EU', display_name: 'Eurozone' }
 ]
 
-// arr to obj, such as { CN : "China", US : "USA" }
 const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
   acc[cur.key] = cur.display_name
   return acc
@@ -210,6 +192,7 @@ export default {
   },
   data () {
     return {
+      feedContent: [],
       numbers: [],
       dialogFormVisible: false,
       tableKey: 0,
@@ -221,6 +204,7 @@ export default {
         p: 1,
         row: 20
       },
+      rowId: '',
       calendarTypeOptions,
       statusOptions: ['published', 'draft', 'deleted'],
       dialogPvVisible: false,
@@ -250,8 +234,16 @@ export default {
       })
     },
     feedback (row) {
-      com_task({ id: row.id, problem: 'Exple' }).then(res => {
-        console.log(res);
+      this.dialogFormVisible = true
+      this.rowId = row.id
+    },
+    feedbackUp () {
+      com_task({ id: this.rowId, problem: this.feedContent }).then(res => {
+        this.dialogFormVisible = false
+        this.$message({
+          type: 'success',
+          message: res.msg
+        })
       })
     },
     reject (row) {
