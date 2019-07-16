@@ -1,6 +1,6 @@
 /*
- * @Author: Chenxu 
- * @Date: 2019-07-04 13:59:59 
+ * @Author: Chenxu
+ * @Date: 2019-07-04 13:59:59
  * @Last Modified by: Chenxu
  * @Last Modified time: 2019-07-16 20:37:18
  */
@@ -75,7 +75,7 @@
       </el-table-column>
       <el-table-column label="是否置顶" width="200px" align="center">
         <template slot-scope="scope">
-          <span>{{scope.row.is_top}}</span>
+          <span>{{ scope.row.is_top }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column label="排序" width="200px" align="center">
@@ -123,14 +123,14 @@
         style="width: 400px; margin-left:50px;"
       >
         <el-form-item label="标题" prop="title">
-          <el-input v-model="temp.title"/>
+          <el-input v-model="temp.title" />
         </el-form-item>
 
         <el-form-item label="所属区域" prop="id">
-          <el-cascader v-model="temp.area_id" :options="areaList"></el-cascader>
+          <el-cascader v-model="temp.area_id" :options="areaList" />
         </el-form-item>
         <el-form-item label="内容" prop="title">
-          <el-input type="textarea" rows="10" v-model="temp.content"/>
+          <el-input v-model="temp.content" type="textarea" rows="10" />
         </el-form-item>
         <el-form-item label="图片" prop="title">
           <el-upload
@@ -142,18 +142,18 @@
             :before-upload="beforeAvatarUpload"
           >
             <img v-if="images" :src="images" class="avatar">
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            <i v-else class="el-icon-plus avatar-uploader-icon" />
           </el-upload>
         </el-form-item>
 
         <el-form-item label="是否置顶" prop="title">
           <el-switch
+            v-model="temp.is_top"
             :active-value="1"
             :inactive-value="0"
-            v-model="temp.is_top"
             active-color="#13ce66"
             inactive-color="#DCDFE6"
-          ></el-switch>
+          />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -167,8 +167,8 @@
 
     <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
       <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel"/>
-        <el-table-column prop="pv" label="Pv"/>
+        <el-table-column prop="key" label="Channel" />
+        <el-table-column prop="pv" label="Pv" />
       </el-table>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="dialogPvVisible = false">{{ $t('table.confirm') }}</el-button>
@@ -197,11 +197,11 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 }, {})
 
 export default {
-  name: 'url',
+  name: 'Url',
   components: { Pagination },
   directives: { waves },
   filters: {
-    statusFilter (status) {
+    statusFilter(status) {
       const statusMap = {
         published: 'success',
         draft: 'info',
@@ -209,16 +209,16 @@ export default {
       }
       return statusMap[status]
     },
-    typeFilter (type) {
+    typeFilter(type) {
       return calendarTypeKeyValue[type]
     }
   },
-  data () {
+  data() {
     return {
       areaList: [],
       images: '',
       upData: {
-        token: ""
+        token: ''
       },
       tableKey: 0,
       list: null,
@@ -256,26 +256,26 @@ export default {
       downloadLoading: false
     }
   },
-  created () {
+  created() {
     this.getList()
     this.getCat()
     this.getToken()
     this.getArea()
   },
   methods: {
-    handleAvatarSuccess (res, file) {
-      this.images = URL.createObjectURL(file.raw);
+    handleAvatarSuccess(res, file) {
+      this.images = URL.createObjectURL(file.raw)
       this.temp.image = res.key
     },
-    beforeAvatarUpload (file) {
-      const isLt2M = file.size / 1024 / 1024 < 2;
+    beforeAvatarUpload(file) {
+      const isLt2M = file.size / 1024 / 1024 < 2
       if (!isLt2M) {
-        this.$message.error("上传头像图片大小不能超过 2MB!");
+        this.$message.error('上传头像图片大小不能超过 2MB!')
       }
-      return isLt2M;
+      return isLt2M
     },
     /* 获取地理位置 */
-    getArea () {
+    getArea() {
       get_area().then(response => {
         // this.areaList = response.result
         this.areaList.push(response.result)
@@ -283,12 +283,12 @@ export default {
       })
     },
     /* 获取 七牛云token */
-    getToken () {
+    getToken() {
       token().then(res => {
         this.upData.token = res.result
       })
     },
-    delUser (row) {
+    delUser(row) {
       del_news({ id: row.id }).then(res => {
         this.$notify({
           title: '成功',
@@ -299,18 +299,18 @@ export default {
         this.getList()
       })
     },
-    getCat () {
-      let params = {
+    getCat() {
+      const params = {
         p: 1,
         row: 20,
-        order: 'url.id desc',
+        order: 'url.id desc'
       }
       cat(params).then(res => {
         this.cats = res.result
-        console.log(res);
+        console.log(res)
       })
     },
-    getList () {
+    getList() {
       this.listLoading = true
       news_index(this.listQuery).then(response => {
         this.list = response.result.list
@@ -318,18 +318,18 @@ export default {
         this.listLoading = false
       })
     },
-    handleFilter () {
+    handleFilter() {
       this.listQuery.p = 1
       this.getList()
     },
 
-    sortChange (data) {
+    sortChange(data) {
       const { prop, order } = data
       if (prop === 'id') {
         this.sortByID(order)
       }
     },
-    sortByID (order) {
+    sortByID(order) {
       if (order === 'ascending') {
         this.listQuery.sort = '+id'
       } else {
@@ -337,7 +337,7 @@ export default {
       }
       this.handleFilter()
     },
-    resetTemp () {
+    resetTemp() {
       this.temp = {
         id: null,
         area_id: '',
@@ -347,7 +347,7 @@ export default {
         image: ''
       }
     },
-    handleCreate () {
+    handleCreate() {
       this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
@@ -355,9 +355,9 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
-    createData () {
+    createData() {
       delete this.temp.id
-      let tempObj = { area_id: this.temp.area_id[2], ...this.temp }
+      const tempObj = { area_id: this.temp.area_id[2], ...this.temp }
 
       add_news(tempObj).then((res) => {
         this.list.unshift(this.temp)
@@ -370,7 +370,7 @@ export default {
         })
       })
     },
-    handleUpdate (row) {
+    handleUpdate(row) {
       this.resetTemp()
       this.temp = { ...row } // copy obj
       /* 单独处理temp内容 */
@@ -385,7 +385,7 @@ export default {
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
     },
-    updateData () {
+    updateData() {
       add_news(this.temp).then(() => {
         for (const v of this.list) {
           if (v.id === this.temp.id) {
@@ -403,7 +403,7 @@ export default {
         })
       })
     },
-    handleDelete (row) {
+    handleDelete(row) {
       this.$notify({
         title: '成功',
         message: '删除成功',
@@ -413,13 +413,13 @@ export default {
       const index = this.list.indexOf(row)
       this.list.splice(index, 1)
     },
-    handleFetchPv (pv) {
+    handleFetchPv(pv) {
       fetchPv(pv).then(response => {
         this.pvData = response.data.pvData
         this.dialogPvVisible = true
       })
     },
-    handleDownload () {
+    handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
         const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
@@ -433,7 +433,7 @@ export default {
         this.downloadLoading = false
       })
     },
-    formatJson (filterVal, jsonData) {
+    formatJson(filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => {
         if (j === 'timestamp') {
           return parseTime(v[j])
