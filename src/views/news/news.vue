@@ -70,7 +70,7 @@
       </el-table-column>
       <el-table-column label="图片" width="300px" align="center">
         <template slot-scope="scope">
-          <img style="width:50px;height:50px" :src="scope.row.image.preview_image" alt />
+          <img style="width:50px;height:50px" :src="scope.row.image.preview_image" alt>
         </template>
       </el-table-column>
       <el-table-column label="是否置顶" width="200px" align="center">
@@ -123,14 +123,14 @@
         style="width: 400px; margin-left:50px;"
       >
         <el-form-item label="标题" prop="title">
-          <el-input v-model="temp.title" />
+          <el-input v-model="temp.title"/>
         </el-form-item>
 
         <el-form-item label="所属区域" prop="id">
           <el-cascader v-model="temp.area_id" :options="areaList"></el-cascader>
         </el-form-item>
         <el-form-item label="内容" prop="title">
-          <el-input type="textarea" rows="10" v-model="temp.content" />
+          <el-input type="textarea" rows="10" v-model="temp.content"/>
         </el-form-item>
         <el-form-item label="图片" prop="title">
           <el-upload
@@ -141,7 +141,7 @@
             :on-success="handleAvatarSuccess"
             :before-upload="beforeAvatarUpload"
           >
-            <img v-if="images" :src="images" class="avatar" />
+            <img v-if="images" :src="images" class="avatar">
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </el-upload>
         </el-form-item>
@@ -167,8 +167,8 @@
 
     <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
       <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel" />
-        <el-table-column prop="pv" label="Pv" />
+        <el-table-column prop="key" label="Channel"/>
+        <el-table-column prop="pv" label="Pv"/>
       </el-table>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="dialogPvVisible = false">{{ $t('table.confirm') }}</el-button>
@@ -357,8 +357,9 @@ export default {
     },
     createData () {
       delete this.temp.id
-      this.temp.area_id = this.temp.area_id[2]
-      add_news(this.temp).then((res) => {
+      let tempObj = { area_id: this.temp.area_id[2], ...this.temp }
+
+      add_news(tempObj).then((res) => {
         this.list.unshift(this.temp)
         this.dialogFormVisible = false
         this.$notify({
@@ -370,14 +371,19 @@ export default {
       })
     },
     handleUpdate (row) {
-      // this.temp = Object.assign({}, row) // copy obj
       this.resetTemp()
-      this.temp.id = row.id
+      this.temp = { ...row } // copy obj
+      /* 单独处理temp内容 */
+      this.images = row.image.preview_image
+      if (row.is_top == '置顶') {
+        this.temp.is_top = 1
+      } else {
+        this.temp.is_top = 0
+      }
+      this.temp.area_id = []
+
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
     },
     updateData () {
       add_news(this.temp).then(() => {
