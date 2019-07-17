@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-15 16:20:05
+ * @Last Modified time: 2019-07-17 09:00:50
  */
 <template>
   <div class="app-container">
@@ -205,6 +205,7 @@ export default {
       })
     },
     viewNumbers (e) {
+      this.numbers = []
       this.numberLoading = true
       this.dialogFormVisible = true
       this.getNumber(e.id)

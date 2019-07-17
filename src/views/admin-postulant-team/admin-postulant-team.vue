@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-15 16:20:15
+ * @Last Modified time: 2019-07-17 09:04:41
  */
 <template>
   <div class="app-container">
@@ -178,7 +178,7 @@
       </el-upload>
       <el-table :data="numbers" style="width: 100%;" max-height="350" v-loading="numberLoading">
         <el-table-column label="序号" type="index" width="150" align="center"></el-table-column>
-        <el-table-column prop="user_id" label="用户名：用户手机号" width="auto" align="left"></el-table-column>
+        <el-table-column prop="user_info" label="用户名：用户手机号" width="auto" align="left"></el-table-column>
         <!-- caozuo  -->
         <el-table-column
           :label="$t('table.actions')"
@@ -288,7 +288,8 @@ export default {
   },
   methods: {
     delUser (row) {
-      remove_xzmember({ user_id: row.id, team_id: this.team_id }).then(res => {
+      remove_xzmember({ user_id: row.user_id, team_id: this.team_id }).then(res => {
+        this.getNumber(this.team_id)
         this.$notify({
           title: '成功',
           message: '删除成功',
@@ -363,6 +364,8 @@ export default {
       })
     },
     viewNumbers (e) {
+      this.numbers = []
+
       this.numberLoading = true
       this.dialogFormVisible = true
       this.getNumber(e.id)

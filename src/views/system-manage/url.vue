@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-15 16:20:52
+ * @Last Modified time: 2019-07-17 09:47:55
  */
 <template>
   <div class="app-container">
@@ -75,7 +75,7 @@
       </el-table-column>
       <el-table-column label="icon图标" width="200px" align="center">
         <template slot-scope="scope">
-          <img style="width:50px;height:50px;" :src="scope.row.image.preview_image" alt>
+          <img style="width:50px;height:50px;" :src="scope.row.image.preview_image" alt />
         </template>
       </el-table-column>
       <!-- <el-table-column label="排序" width="200px" align="center">
@@ -123,10 +123,10 @@
         style="width: 400px; margin-left:50px;"
       >
         <el-form-item label="快捷url名字" prop="title">
-          <el-input v-model="temp.name"/>
+          <el-input v-model="temp.name" />
         </el-form-item>
         <el-form-item label="快捷url" prop="title">
-          <el-input v-model="temp.url"/>
+          <el-input v-model="temp.url" />
         </el-form-item>
         <el-form-item label="图标" prop="title">
           <el-upload
@@ -137,7 +137,7 @@
             :on-success="handleAvatarSuccess"
             :before-upload="beforeAvatarUpload"
           >
-            <img v-if="images" :src="images" class="avatar">
+            <img v-if="images" :src="images" class="avatar" />
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </el-upload>
         </el-form-item>
@@ -147,7 +147,7 @@
         </el-form-item>-->
         <el-form-item label="快捷分类" prop="type">
           <el-select v-model="temp.cat_id" class="filter-item" placeholder="请选择">
-            <el-option v-for="item in cats" :key="item.id" :label="item.name" :value="item.id"/>
+            <el-option v-for="item in cats" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -162,8 +162,8 @@
 
     <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
       <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel"/>
-        <el-table-column prop="pv" label="Pv"/>
+        <el-table-column prop="key" label="Channel" />
+        <el-table-column prop="pv" label="Pv" />
       </el-table>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="dialogPvVisible = false">{{ $t('table.confirm') }}</el-button>
@@ -356,10 +356,10 @@ export default {
     },
     handleUpdate (row) {
       this.resetTemp()
-      this.temp = { sort: 1, ...row }
+      this.temp = { sort: 1, status: 1, ...row }
       this.images = row.image.preview_image
+      delete this.temp.cat_name
 
-      console.log(this.temp);
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {

@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-16 20:26:13
+ * @Last Modified time: 2019-07-17 10:03:59
  */
 <template>
   <div class="app-container">
@@ -182,7 +182,11 @@
         </el-form-item>
 
         <el-form-item label="所属区域" prop="id">
-          <el-cascader v-model="temp.area_id" :options="areaList"></el-cascader>
+          <el-cascader
+            v-model="temp.area_id"
+            :props="{multiple:true, checkStrictly: true }"
+            :options="areaList"
+          ></el-cascader>
         </el-form-item>
 
         <el-form-item label="用户姓名" prop="title">
@@ -296,7 +300,7 @@ export default {
   },
   methods: {
     delUser (row) {
-      remove_xzmember({ user_id: row.id, team_id: row.team_id }).then(res => {
+      remove_xzmember({ user_id: row.id }).then(res => {
         this.$notify({
           title: '成功',
           message: '删除成功',
@@ -335,7 +339,6 @@ export default {
         this.dialogFormVisible = false
         this.getList()
       })
-      this.dialogFormVisible = false
     },
     getList () {
       this.listLoading = true

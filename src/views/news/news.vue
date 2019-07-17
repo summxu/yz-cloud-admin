@@ -2,7 +2,7 @@
  * @Author: Chenxu
  * @Date: 2019-07-04 13:59:59
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-16 20:37:18
+ * @Last Modified time: 2019-07-17 09:20:27
  */
 <template>
   <div class="app-container">
@@ -70,7 +70,7 @@
       </el-table-column>
       <el-table-column label="图片" width="300px" align="center">
         <template slot-scope="scope">
-          <img style="width:50px;height:50px" :src="scope.row.image.preview_image" alt>
+          <img style="width:50px;height:50px" :src="scope.row.image.preview_image" alt />
         </template>
       </el-table-column>
       <el-table-column label="是否置顶" width="200px" align="center">
@@ -127,7 +127,7 @@
         </el-form-item>
 
         <el-form-item label="所属区域" prop="id">
-          <el-cascader v-model="temp.area_id" :options="areaList" />
+          <el-cascader :props="{ checkStrictly: true }" v-model="temp.area_id" :options="areaList" />
         </el-form-item>
         <el-form-item label="内容" prop="title">
           <el-input v-model="temp.content" type="textarea" rows="10" />
@@ -141,7 +141,7 @@
             :on-success="handleAvatarSuccess"
             :before-upload="beforeAvatarUpload"
           >
-            <img v-if="images" :src="images" class="avatar">
+            <img v-if="images" :src="images" class="avatar" />
             <i v-else class="el-icon-plus avatar-uploader-icon" />
           </el-upload>
         </el-form-item>
@@ -201,7 +201,7 @@ export default {
   components: { Pagination },
   directives: { waves },
   filters: {
-    statusFilter(status) {
+    statusFilter (status) {
       const statusMap = {
         published: 'success',
         draft: 'info',
@@ -209,11 +209,11 @@ export default {
       }
       return statusMap[status]
     },
-    typeFilter(type) {
+    typeFilter (type) {
       return calendarTypeKeyValue[type]
     }
   },
-  data() {
+  data () {
     return {
       areaList: [],
       images: '',
@@ -256,18 +256,18 @@ export default {
       downloadLoading: false
     }
   },
-  created() {
+  created () {
     this.getList()
     this.getCat()
     this.getToken()
     this.getArea()
   },
   methods: {
-    handleAvatarSuccess(res, file) {
+    handleAvatarSuccess (res, file) {
       this.images = URL.createObjectURL(file.raw)
       this.temp.image = res.key
     },
-    beforeAvatarUpload(file) {
+    beforeAvatarUpload (file) {
       const isLt2M = file.size / 1024 / 1024 < 2
       if (!isLt2M) {
         this.$message.error('上传头像图片大小不能超过 2MB!')
@@ -275,7 +275,7 @@ export default {
       return isLt2M
     },
     /* 获取地理位置 */
-    getArea() {
+    getArea () {
       get_area().then(response => {
         // this.areaList = response.result
         this.areaList.push(response.result)
@@ -283,12 +283,12 @@ export default {
       })
     },
     /* 获取 七牛云token */
-    getToken() {
+    getToken () {
       token().then(res => {
         this.upData.token = res.result
       })
     },
-    delUser(row) {
+    delUser (row) {
       del_news({ id: row.id }).then(res => {
         this.$notify({
           title: '成功',
@@ -299,7 +299,7 @@ export default {
         this.getList()
       })
     },
-    getCat() {
+    getCat () {
       const params = {
         p: 1,
         row: 20,
@@ -310,7 +310,7 @@ export default {
         console.log(res)
       })
     },
-    getList() {
+    getList () {
       this.listLoading = true
       news_index(this.listQuery).then(response => {
         this.list = response.result.list
@@ -318,18 +318,18 @@ export default {
         this.listLoading = false
       })
     },
-    handleFilter() {
+    handleFilter () {
       this.listQuery.p = 1
       this.getList()
     },
 
-    sortChange(data) {
+    sortChange (data) {
       const { prop, order } = data
       if (prop === 'id') {
         this.sortByID(order)
       }
     },
-    sortByID(order) {
+    sortByID (order) {
       if (order === 'ascending') {
         this.listQuery.sort = '+id'
       } else {
@@ -337,7 +337,7 @@ export default {
       }
       this.handleFilter()
     },
-    resetTemp() {
+    resetTemp () {
       this.temp = {
         id: null,
         area_id: '',
@@ -347,7 +347,7 @@ export default {
         image: ''
       }
     },
-    handleCreate() {
+    handleCreate () {
       this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
@@ -355,7 +355,7 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
-    createData() {
+    createData () {
       delete this.temp.id
       const tempObj = { area_id: this.temp.area_id[2], ...this.temp }
 
@@ -370,7 +370,7 @@ export default {
         })
       })
     },
-    handleUpdate(row) {
+    handleUpdate (row) {
       this.resetTemp()
       this.temp = { ...row } // copy obj
       /* 单独处理temp内容 */
@@ -385,7 +385,7 @@ export default {
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
     },
-    updateData() {
+    updateData () {
       add_news(this.temp).then(() => {
         for (const v of this.list) {
           if (v.id === this.temp.id) {
@@ -403,7 +403,7 @@ export default {
         })
       })
     },
-    handleDelete(row) {
+    handleDelete (row) {
       this.$notify({
         title: '成功',
         message: '删除成功',
@@ -413,13 +413,13 @@ export default {
       const index = this.list.indexOf(row)
       this.list.splice(index, 1)
     },
-    handleFetchPv(pv) {
+    handleFetchPv (pv) {
       fetchPv(pv).then(response => {
         this.pvData = response.data.pvData
         this.dialogPvVisible = true
       })
     },
-    handleDownload() {
+    handleDownload () {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
         const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
@@ -433,7 +433,7 @@ export default {
         this.downloadLoading = false
       })
     },
-    formatJson(filterVal, jsonData) {
+    formatJson (filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => {
         if (j === 'timestamp') {
           return parseTime(v[j])
@@ -475,7 +475,7 @@ export default {
 /deep/.model .el-textarea__inner,
 /deep/.model .el-select .el-input__inner,
 /deep/.model .el-cascader .el-input__inner {
-  width: 700px;
+  width: 600px;
   // width: 100%;
 }
 </style>
