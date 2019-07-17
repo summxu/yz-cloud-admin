@@ -2,7 +2,7 @@
  * @Author: Chenxu
  * @Date: 2019-07-04 13:59:59
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-17 09:20:27
+ * @Last Modified time: 2019-07-17 18:23:18
  */
 <template>
   <div class="app-container">
@@ -126,11 +126,22 @@
           <el-input v-model="temp.title" />
         </el-form-item>
 
-        <el-form-item label="所属区域" prop="id">
-          <el-cascader :props="{ checkStrictly: true }" v-model="temp.area_id" :options="areaList" />
+        <el-form-item label="所属区域">
+          <el-cascader
+            :props="{ checkStrictly: true }"
+            clearable
+            v-model="temp.area_id"
+            :options="areaList"
+          />
         </el-form-item>
+
         <el-form-item label="内容" prop="title">
-          <el-input v-model="temp.content" type="textarea" rows="10" />
+          <quill-editor
+            class="editor"
+            v-model="temp.content"
+            :options="editorOption"
+            ref="myQuillEditor"
+          ></quill-editor>
         </el-form-item>
         <el-form-item label="图片" prop="title">
           <el-upload
@@ -215,6 +226,21 @@ export default {
   },
   data () {
     return {
+      props: { multiple: true },
+      /* 富文本配置 */
+      editorOption: {
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],    //加粗，斜体，下划线，删除线
+            [{ 'header': 1 }, { 'header': 2 }],        // 标题，键值对的形式；1、2表示字体大小
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],     //列表
+            [{ 'color': [] }, { 'background': [] }],     // 字体颜色，字体背景颜色
+            [{ 'align': [] }],    //对齐方式
+            ['clean'],    //清除字体样式
+            ['image', 'video']    //上传图片、上传视频
+          ]
+        }
+      },
       areaList: [],
       images: '',
       upData: {
@@ -477,5 +503,10 @@ export default {
 /deep/.model .el-cascader .el-input__inner {
   width: 600px;
   // width: 100%;
+}
+.editor {
+  width: 700px;
+  height: 300px;
+  margin-bottom: 50px;
 }
 </style>

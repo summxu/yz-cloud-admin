@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-17 10:03:59
+ * @Last Modified time: 2019-07-17 18:23:33
  */
 <template>
   <div class="app-container">
@@ -184,8 +184,9 @@
         <el-form-item label="所属区域" prop="id">
           <el-cascader
             v-model="temp.area_id"
-            :props="{multiple:true, checkStrictly: true }"
+            :props="{ checkStrictly: true }"
             :options="areaList"
+            clearable
           ></el-cascader>
         </el-form-item>
 

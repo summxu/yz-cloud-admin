@@ -43,29 +43,34 @@ export const constantRoutes = [
 export const asyncRoutes = [
   {
     path: '',
+    hidden: true,
     component: () => import('@/layout'),
     redirect: 'postulant/normal',
     meta: { title: '志愿者管理', icon: 'people' },
     children: [
       {
-        path: 'postulant/normal',
+        path: '/postulant/normal',
         component: () => import('@/views/postulant/normal'),
+        hidden: true,
         name: 'normal',
         meta: { title: '普通志愿者', affix: true }
       }, {
-        path: 'postulant/personage',
+        path: '/postulant/personage',
         component: () => import('@/views/postulant/personage'),
+        hidden: true,
         name: 'personage',
         meta: { title: '个人志愿者', affix: true }
       }, {
-        path: 'postulant/administrative',
+        path: '/postulant/administrative',
         component: () => import('@/views/postulant/administrative'),
+        hidden: true,
         name: 'administrative',
         meta: { title: '行政志愿者', affix: true }
       },
       {
-        path: 'admin-postulant-team',
+        path: '/postulant/admin-postulant-team',
         component: () => import('@/views/admin-postulant-team/admin-postulant-team'),
+        hidden: true,
         name: 'admin-postulant-team',
         meta: { title: '行政志愿者团队', affix: true }
       }
@@ -74,12 +79,14 @@ export const asyncRoutes = [
   {
     path: '',
     component: () => import('@/layout'),
+    hidden: true,
     redirect: 'activity',
     meta: { title: '活动需求审核', icon: 'peoples' },
     children: [
       {
-        path: 'activity',
+        path: '/activity',
         component: () => import('@/views/activity/activity'),
+        hidden: true,
         name: 'activity',
         meta: { title: '活动需求审核', affix: true }
       }
@@ -88,12 +95,14 @@ export const asyncRoutes = [
   {
     path: '',
     component: () => import('@/layout'),
+    hidden: true,
     redirect: 'task',
     meta: { title: '待处理任务', icon: 'message' },
     children: [
       {
-        path: 'task',
+        path: '/task',
         component: () => import('@/views/task/task'),
+        hidden: true,
         name: 'task',
         meta: { title: '待处理任务', affix: true }
       }
@@ -102,12 +111,14 @@ export const asyncRoutes = [
   {
     path: '',
     component: () => import('@/layout'),
+    hidden: true,
     redirect: 'of-people',
     meta: { title: '便民需求', icon: 'message' },
     children: [
       {
-        path: 'of-people',
+        path: '/of-people',
         component: () => import('@/views/of-people/of-people'),
+        hidden: true,
         name: 'of-people',
         meta: { title: '便民需求', affix: true }
       }
@@ -117,12 +128,14 @@ export const asyncRoutes = [
   {
     path: '',
     component: () => import('@/layout'),
+    hidden: true,
     redirect: 'postulant-team',
     meta: { title: '志愿者团队', icon: 'example' },
     children: [
       {
-        path: 'postulant-team',
+        path: '/postulant-team',
         component: () => import('@/views/postulant-team/postulant-team'),
+        hidden: true,
         name: 'postulant-team',
         meta: { title: '志愿者团队', affix: true }
       }
@@ -132,14 +145,32 @@ export const asyncRoutes = [
   {
     path: '',
     component: () => import('@/layout'),
+    hidden: true,
     redirect: 'news',
     meta: { title: '新闻管理', icon: 'example' },
     children: [
       {
-        path: 'news',
+        path: '/news',
         component: () => import('@/views/news/news'),
+        hidden: true,
         name: 'news',
         meta: { title: '新闻管理', affix: true }
+      }
+    ]
+  },
+  {
+    path: '',
+    component: () => import('@/layout'),
+    hidden: true,
+    redirect: 'protocol',
+    meta: { title: '协议管理', icon: 'example' },
+    children: [
+      {
+        path: '/protocol',
+        component: () => import('@/views/protocol/protocol'),
+        hidden: true,
+        name: 'protocol',
+        meta: { title: '协议管理', affix: true }
       }
     ]
   },
@@ -148,31 +179,30 @@ export const asyncRoutes = [
   {
     path: '/permission',
     component: () => import('@/layout'),
-    redirect: '/permission/page',
-    alwaysShow: true, // will always show the root menu
+    hidden: true,
+    redirect: '/permission/role',
     name: 'Permission',
     meta: {
       title: '角色权限',
-      icon: 'lock',
-      roles: ['1']
+      icon: 'lock'
     },
     children: [
       {
-        path: 'role',
+        path: '/permission/role',
         component: () => import('@/views/permission/role'),
+        hidden: true,
         name: 'RolePermission',
         meta: {
-          title: '角色管理',
-          roles: ['1']
+          title: '角色管理'
         }
       },
       {
-        path: 'admin-manage',
+        path: '/permission/admin-manage',
         component: () => import('@/views/permission/admin-manage'),
+        hidden: true,
         name: 'DirectivePermission',
         meta: {
-          title: '管理员管理',
-          roles: ['1']
+          title: '管理员管理'
         }
       }
     ]
@@ -180,51 +210,52 @@ export const asyncRoutes = [
   {
     path: '/system-manage',
     component: () => import('@/layout'),
-    redirect: 'system-manage/ads',
+    hidden: true,
+    redirect: '/system-manage/site-option',
+    name: 'System',
     meta: {
       title: '系统管理',
-      icon: 'component',
-      roles: ['1']
+      icon: 'component'
     },
     children: [
-      // {
-      //   path: 'system-manage/ads',
-      //   component: () => import('@/views/system-manage/ads'),
-      //   name: 'ads',
-      //   meta: { title: '广告管理', affix: true }
-      // },
       {
-        path: 'system-manage/site-option',
+        path: '/system-manage/site-option',
         component: () => import('@/views/system-manage/site-option'),
+        hidden: true,
         name: 'site-option',
-        meta: { title: '网站设置', affix: true }
+        meta: { title: '网站设置' }
       },
       {
-        path: 'system-manage/demand',
+        path: '/system-manage/demand',
         component: () => import('@/views/system-manage/demand'),
+        hidden: true,
         name: 'demand',
-        meta: { title: '需求类型管理', affix: true }
+        meta: { title: '需求类型管理' }
       },
       {
-        path: 'system-manage/admin-log',
+        path: '/system-manage/admin-log',
         component: () => import('@/views/system-manage/admin-log'),
+        hidden: true,
         name: 'admin-log',
-        meta: { title: '管理员日志', affix: true }
+        meta: { title: '管理员日志' }
       },
       {
-        path: 'system-manage/url',
+        path: '/system-manage/url',
         component: () => import('@/views/system-manage/url'),
+        hidden: true,
         name: 'url',
-        meta: { title: '快捷URL管理', affix: true }
+        meta: { title: '快捷URL管理' }
       },
       {
-        path: 'system-manage/url-classify',
+        path: '/system-manage/url-classify',
         component: () => import('@/views/system-manage/url-classify'),
+        hidden: true,
         name: 'url-classify',
-        meta: { title: '快捷URL分类管理', affix: true }
-      },
+        meta: { title: '快捷URL分类管理' }
+      }
     ]
   }
+
 ]
 
 const createRouter = () => new Router({

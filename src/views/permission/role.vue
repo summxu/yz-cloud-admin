@@ -6,13 +6,13 @@
       <el-table-column align="center" label="角色ID" width="220">
         <template slot-scope="scope">{{ scope.row.id }}</template>
       </el-table-column>
-      <el-table-column align="center" label="角色名字" width="220">
+      <el-table-column align="center" label="角色名字">
         <template slot-scope="scope">{{ scope.row.title }}</template>
       </el-table-column>
-      <el-table-column align="header-center" label="角色描述">
+      <!-- <el-table-column align="header-center" label="角色描述">
         <template slot-scope="scope">{{ scope.row.content }}</template>
-      </el-table-column>
-      <el-table-column align="center" label="操作">
+      </el-table-column>-->
+      <el-table-column width="200" align="center" label="操作">
         <template slot-scope="scope">
           <el-button
             type="primary"
@@ -33,14 +33,14 @@
         <el-form-item label="名字">
           <el-input v-model="role.title" placeholder="角色名字" />
         </el-form-item>
-        <el-form-item label="角色简述">
+        <!-- <el-form-item label="角色简述">
           <el-input
             v-model="role.content"
             :autosize="{ minRows: 2, maxRows: 4}"
             type="textarea"
             placeholder="在此输入角色简述"
           />
-        </el-form-item>
+        </el-form-item>-->
         <el-form-item label="角色权限">
           <el-tree
             ref="tree"
@@ -113,6 +113,7 @@ export default {
       const routes = this.generateRoutes(asyncRoutes)
 
       this.routes = routes
+      console.log(this.routes);
     },
     async getRoles () {
       const res = await role_index({ p: 1, row: 200 })
@@ -135,7 +136,7 @@ export default {
 
       for (let route of routes) {
         // skip some route
-        if (route.hidden) { continue }
+        // if (route.hidden) { continue }
 
         const onlyOneShowingChild = this.onlyOneShowingChild(route.children, route)
 
@@ -181,12 +182,19 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.checkStrictly = true
-      this.role = deepClone(scope.row)
+      this.role = scope.row
+
       this.$nextTick(() => {
-        const routes = this.generateRoutes(this.role.routes)
-        this.$refs.tree.setCheckedNodes(this.generateArr(routes))
-        // set checked state of a node not affects its father and child nodes
-        this.checkStrictly = false
+        // const routes = this.generateRoutes(this.role.content, '/permission')
+        /* 在此获取的路由 */
+        // console.log(routes);
+        // console.log(this.generateArr(routes));
+        let arr = this.role.content.split(',')
+        console.log(arr);
+        this.$refs.tree.setCheckedKeys(arr)
+        // this.$refs.tree.setCheckedNodes(this.generateArr(routes))
+        // // set checked state of a node not affects its father and child nodes
+        // this.checkStrictly = false
       })
     },
     handleDelete ({ $index, row }) {
@@ -228,7 +236,6 @@ export default {
       const checkedKeys = this.$refs.tree.getCheckedKeys()
       this.role.routes = this.generateTree(deepClone(this.serviceRoutes), '/postulant', checkedKeys)
 
-      console.log(checkedKeys);
 
       if (isEdit) {
         await edit_role({ id: this.role.id, content: checkedKeys.toString(), title: this.role.title })

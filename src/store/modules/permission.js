@@ -8,10 +8,16 @@ import { getInfo } from "@/api/user";
 
 
 /* 处理路由树 */
+/* 这里的权限是反过来了 。。 。  */
 function handleTree (array) {
-  array.forEach(item => {
-    asyncRoutes.forEach(element => {
-      // if (element.path == item.)
+  asyncRoutes.forEach(item => {
+    item.children.forEach((element, j) => {
+      array.forEach(temp => {
+        if (temp.name == element.path) {
+          element.hidden = false
+          item.hidden = false
+        }
+      });
     })
   })
 }
@@ -66,6 +72,7 @@ const actions = {
   async generateRoutes ({ commit }, roles) {
     let routerTree = await getInfo()
     // let asyncRoutes = handleTree(routerTree.result)
+    handleTree(routerTree.result)
     /* 获取到权限处理路由树 */
 
     return new Promise(resolve => {
@@ -73,6 +80,7 @@ const actions = {
       if (roles.includes('admin')) {
         accessedRoutes = asyncRoutes || []
       } else {
+        console.log(asyncRoutes);
         accessedRoutes = filterAsyncRoutes(asyncRoutes, roles)
       }
       commit('SET_ROUTES', accessedRoutes)

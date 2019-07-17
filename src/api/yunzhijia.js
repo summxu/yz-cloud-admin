@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 17:00:12 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-16 16:50:56
+ * @Last Modified time: 2019-07-17 16:40:41
  */
 import request from '@/utils/request'
 
@@ -362,3 +362,25 @@ export function edit_role (data) {
   })
 }
 
+/* 协议 */
+export function agreement_index (data) {
+  return request({
+    url: '/admin/Index/agreement_index',
+    method: 'post',
+    data
+  })
+}
+export function del_agreement (data) {
+  return request({
+    url: '/admin/Index/del_agreement',
+    method: 'post',
+    data
+  })
+}
+export function edit_agreement (data) {
+  return request({
+    url: '/admin/Index/edit_agreement',
+    method: 'post',
+    data
+  })
+}
