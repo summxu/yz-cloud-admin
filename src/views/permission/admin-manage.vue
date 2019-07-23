@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-17 18:23:27
+ * @Last Modified time: 2019-07-18 15:23:31
  */
 <template>
   <div class="app-container">
@@ -171,7 +171,7 @@
 </template>
 
 <script>
-import { add_admin, role_index, admin_index, update_admin, get_area, open_free_admin, cat, token } from '@/api/yunzhijia'
+import { add_admin, roleIndex, admin_index, update_admin, get_area, open_free_admin, cat, token } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -256,7 +256,11 @@ export default {
   },
   methods: {
     getRole () {
-      role_index({ p: 1, row: 200 }).then(res => {
+      let params = {
+        p: 1,
+        row: 200
+      }
+      roleIndex(params).then(res => {
         this.roles = res.result.list
       })
     },
@@ -348,7 +352,7 @@ export default {
       })
     },
     createData () {
-      this.temp.area_id = this.temp.area_id[2]
+      this.temp.area_id = this.temp.area_id[this.temp.area_id - 1]
       // this.temp = this.temp[2]
       add_admin(this.temp).then((res) => {
         this.list.unshift(this.temp)

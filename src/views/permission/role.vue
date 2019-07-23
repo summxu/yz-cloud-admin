@@ -65,8 +65,8 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 /* 此处 getRoutes 就为正常路由 */
-import { getRoutes, getRoles, addRole, deleteRole, updateRole } from '@/api/role'
-import { role_index, edit_role } from "@/api/yunzhijia";
+import { getRoutes, addRole, deleteRole, updateRole } from '@/api/role'
+import { roleIndex, edit_role } from "@/api/yunzhijia";
 import { asyncRoutes, constantRoutes } from '@/router'
 import i18n from '@/lang'
 
@@ -103,7 +103,7 @@ export default {
     this.getRoles()
   },
   methods: {
-    async getRoutes () {
+    getRoutes () {
       // const res = await getRoutes()
 
       // this.serviceRoutes = res.data
@@ -113,11 +113,15 @@ export default {
       const routes = this.generateRoutes(asyncRoutes)
 
       this.routes = routes
-      console.log(this.routes);
     },
-    async getRoles () {
-      const res = await role_index({ p: 1, row: 200 })
-      this.rolesList = res.result.list
+    getRoles () {
+      let params = {
+        p: 1,
+        row: 200
+      }
+      roleIndex(params).then(res => {
+        this.rolesList = res.result.list
+      })
     },
     i18n (routes) {
       const app = routes.map(route => {

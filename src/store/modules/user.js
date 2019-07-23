@@ -105,6 +105,7 @@ const actions = {
   // remove token
   resetToken ({ commit }) {
     return new Promise(resolve => {
+      console.log('token token');
       commit('SET_TOKEN', '')
       commit('SET_ADMIN_ID', '')
       commit('SET_ROLES', [])

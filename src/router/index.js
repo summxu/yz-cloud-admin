@@ -81,14 +81,14 @@ export const asyncRoutes = [
     component: () => import('@/layout'),
     hidden: true,
     redirect: 'activity',
-    meta: { title: '活动需求审核', icon: 'peoples' },
+    meta: { title: '活动需求', icon: 'peoples' },
     children: [
       {
         path: '/activity',
         component: () => import('@/views/activity/activity'),
         hidden: true,
         name: 'activity',
-        meta: { title: '活动需求审核', affix: true }
+        meta: { title: '活动需求', affix: true }
       }
     ]
   },

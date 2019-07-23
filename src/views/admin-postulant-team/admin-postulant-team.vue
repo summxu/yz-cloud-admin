@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-17 09:04:41
+ * @Last Modified time: 2019-07-23 15:48:11
  */
 <template>
   <div class="app-container">
@@ -45,6 +45,7 @@
       v-loading="listLoading"
       :data="list"
       border
+      size="mini"
       fit
       highlight-current-row
       style="width: 100%;"

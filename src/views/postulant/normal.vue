@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-15 16:18:38
+ * @Last Modified time: 2019-07-23 15:47:06
  */
 <template>
   <div class="app-container">
@@ -39,6 +39,7 @@
       :key="tableKey"
       v-loading="listLoading"
       :data="list"
+      size="mini"
       border
       fit
       highlight-current-row
@@ -68,11 +69,6 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="身份证号" width="150px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.identity_card }}</span>
-        </template>
-      </el-table-column>
       <el-table-column label="手机号" min-width="100px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.mobile }}</span>
@@ -113,7 +109,7 @@
 
       <!-- 操作 -->
 
-      <el-table-column
+      <!-- <el-table-column
         :label="$t('table.actions')"
         align="center"
         width="0"
@@ -122,7 +118,7 @@
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
         </template>
-      </el-table-column>
+      </el-table-column>-->
     </el-table>
 
     <!-- 分页 -->

@@ -2,7 +2,7 @@
  * @Author: Chenxu
  * @Date: 2019-07-04 13:59:59
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-17 18:23:18
+ * @Last Modified time: 2019-07-18 15:23:02
  */
 <template>
   <div class="app-container">
@@ -383,7 +383,7 @@ export default {
     },
     createData () {
       delete this.temp.id
-      const tempObj = { area_id: this.temp.area_id[2], ...this.temp }
+      const tempObj = { area_id: this.temp.area_id[this.temp.area_id.length - 1], ...this.temp }
 
       add_news(tempObj).then((res) => {
         this.list.unshift(this.temp)

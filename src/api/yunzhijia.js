@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 17:00:12 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-17 16:40:41
+ * @Last Modified time: 2019-07-23 17:26:33
  */
 import request from '@/utils/request'
 
@@ -320,11 +320,11 @@ export function open_free_admin (data) {
 }
 
 
-export function role_index (data) {
+export function roleIndex (data) {
   return request({
-    url: '/admin/User/role_index',
-    method: 'post',
-    data
+    url: '/admin/User/roleIndex',
+    method: 'get',
+    params: data
   })
 }
 
@@ -380,6 +380,16 @@ export function del_agreement (data) {
 export function edit_agreement (data) {
   return request({
     url: '/admin/Index/edit_agreement',
+    method: 'post',
+    data
+  })
+}
+
+
+/* 新增的正删改 */
+export function update_user (data) {
+  return request({
+    url: '/admin/User/update_user',
     method: 'post',
     data
   })

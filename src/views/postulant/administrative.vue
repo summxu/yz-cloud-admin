@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-17 18:23:33
+ * @Last Modified time: 2019-07-23 17:49:43
  */
 <template>
   <div class="app-container">
@@ -47,6 +47,7 @@
       :data="list"
       border
       fit
+      size="mini"
       highlight-current-row
       style="width: 100%;"
       @sort-change="sortChange"
@@ -64,7 +65,7 @@
       </el-table-column>
       <el-table-column label="用户名" min-width="100px">
         <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.username }}</span>
+          <span>{{ row.username }}</span>
         </template>
       </el-table-column>
       <el-table-column label="头像" width="100px" align="center">
@@ -78,11 +79,6 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="身份证号" width="150px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.identity_card }}</span>
-        </template>
-      </el-table-column>
       <el-table-column label="手机号" min-width="100px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.mobile }}</span>
@@ -135,7 +131,7 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
-          <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button> -->
+          <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
           <el-button type="danger" size="mini" @click="delUser(row)">移除</el-button>
         </template>
       </el-table-column>
@@ -191,7 +187,7 @@
         </el-form-item>
 
         <el-form-item label="用户姓名" prop="title">
-          <el-input v-model="temp.user_name" />
+          <el-input v-model="temp.username" />
         </el-form-item>
         <el-form-item label="密码" prop="title">
           <el-input type="password" v-model="temp.password" />
@@ -205,7 +201,10 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">{{ $t('table.cancel') }}</el-button>
-        <el-button type="primary" @click="addXzmember">{{ $t('table.confirm') }}</el-button>
+        <el-button
+          type="primary"
+          @click="dialogStatus=='create'?addXzmember:updateData"
+        >{{ $t('table.confirm') }}</el-button>
       </div>
     </el-dialog>
 
@@ -222,7 +221,7 @@
 </template>
 
 <script>
-import { userIndex, get_area, add_xzmember, remove_xzmember, volunteers_team } from '@/api/yunzhijia'
+import { userIndex, update_user, get_area, add_xzmember, remove_xzmember, volunteers_team } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -274,7 +273,7 @@ export default {
       teamList,
       statusOptions: ['published', 'draft', 'deleted'],
       temp: {
-        user_name: '',
+        username: '',
         password: '',
         mobile: '',
         identity_card: '',
@@ -333,7 +332,7 @@ export default {
     },
     /* 添加 志愿者 */
     addXzmember () {
-      this.temp.area_id = this.temp.area_id[2]
+      this.temp.area_id = this.temp.area_id[this.temp.area_id - 1]
       add_xzmember(this.temp).then(response => {
         this.list = response.result.list
         this.total = response.result.count
@@ -408,19 +407,15 @@ export default {
     },
     handleUpdate (row) {
       this.temp = Object.assign({}, row) // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp)
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
     },
     updateData () {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
           tempData.timestamp = +new Date(tempData.timestamp)
-          updateArticle(tempData).then(() => {
+          update_user(tempData).then(() => {
             for (const v of this.list) {
               if (v.id === this.temp.id) {
                 const index = this.list.indexOf(v)
