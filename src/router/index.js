@@ -61,6 +61,12 @@ export const asyncRoutes = [
         name: 'personage',
         meta: { title: '个人志愿者', affix: true }
       }, {
+        path: '/postulant/personageChenck',
+        component: () => import('@/views/postulant/personageChenck'),
+        hidden: true,
+        name: 'personageChenck',
+        meta: { title: '志愿者审核', affix: true }
+      }, {
         path: '/postulant/administrative',
         component: () => import('@/views/postulant/administrative'),
         hidden: true,

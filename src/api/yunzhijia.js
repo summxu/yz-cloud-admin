@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 17:00:12 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-23 17:26:33
+ * @Last Modified time: 2019-07-24 21:28:44
  */
 import request from '@/utils/request'
 
@@ -390,6 +390,31 @@ export function edit_agreement (data) {
 export function update_user (data) {
   return request({
     url: '/admin/User/update_user',
+    method: 'post',
+    data
+  })
+}
+
+
+/* 志愿者审核 */
+export function check_index (data) {
+  return request({
+    url: '/admin/User/check_index',
+    method: 'post',
+    data
+  })
+}
+
+export function check_user (data) {
+  return request({
+    url: '/admin/User/check_user',
+    method: 'post',
+    data
+  })
+}
+export function update_need (data) {
+  return request({
+    url: '/admin/Need/update_need',
     method: 'post',
     data
   })

@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-17 09:00:50
+ * @Last Modified time: 2019-07-24 19:56:14
  */
 <template>
   <div class="app-container">
@@ -67,9 +67,10 @@
           <el-tag v-if="scope.row.status == 2" type="danger">已拒绝</el-tag>
         </template>
       </el-table-column>
+      <!-- 修改狂 -->
 
       <!-- 操作 -->
-      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button
             v-if="row.status == 1"
@@ -79,6 +80,7 @@
           >查看团队成员</el-button>
           <el-button v-if="!row.status" type="success" size="mini" @click="agree(row)">通过</el-button>
           <el-button v-if="!row.status" type="danger" size="mini" @click="reject(row)">拒绝</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)">修改</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -91,6 +93,96 @@
       :limit.sync="listQuery.row"
       @pagination="getList"
     />
+
+    <!-- 模态窗 -->
+    <el-dialog class="model" title="修改信息" :visible.sync="dialogFormVisible1">
+      <el-form
+        ref="dataForm"
+        :model="team"
+        label-position="right"
+        label-width="120px"
+        style="width: 400px; margin-left:50px;"
+      >
+        <el-form-item label="团队名称" prop="title">
+          <el-input v-model="team.team_name" />
+        </el-form-item>
+        <el-form-item label="团徽" prop="title">
+          <el-upload
+            class="avatar-uploader"
+            action="http://up.qiniup.com/"
+            :show-file-list="false"
+            :data="upData"
+            :on-success="handleAvatarSuccess1"
+            :before-upload="beforeAvatarUpload1"
+          >
+            <img v-if="images" :src="images" class="avatar" />
+            <i v-else class="el-icon-plus avatar-uploader-icon" />
+          </el-upload>
+        </el-form-item>
+        <!-- <el-form-item label="实践中心相册" prop="title">
+          <el-upload
+            class="avatar-uploader"
+            action="http://up.qiniup.com/"
+            :show-file-list="false"
+            :data="upData1"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+            :file-list="fileList"
+          >
+            <el-button size="small" type="primary">点击上传</el-button>
+          </el-upload>
+        </el-form-item>-->
+        <el-form-item label="团队简介描述" prop="title">
+          <el-input type="textarea" v-model="team.description" />
+        </el-form-item>
+
+        <el-form-item label="团队类型" prop="type">
+          <el-select v-model="team.type_id" multiple class="filter-item" placeholder="请选择">
+            <el-option
+              v-for="item in types"
+              :key="item.id"
+              :label="item.type_name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="团队类别" prop="type">
+          <el-select v-model="team.type" class="filter-item" placeholder="请选择">
+            <el-option
+              v-for="item in typesss"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态" prop="type">
+          <el-select v-model="team.status" class="filter-item" placeholder="请选择">
+            <el-option
+              v-for="item in statusList"
+              :key="item.value"
+              :label="item.lable"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="团队长" prop="type">
+          <el-select v-model="team.team_leader_id" class="filter-item" placeholder="请选择">
+            <el-option
+              v-for="item in statusList"
+              :key="item.value"
+              :label="item.lable"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible1 = false">{{ $t('table.cancel') }}</el-button>
+        <el-button type="primary" @click="updateData()">{{ $t('table.confirm') }}</el-button>
+      </div>
+    </el-dialog>
 
     <!-- 模态窗 -->
     <el-dialog title="团队成员列表" :visible.sync="dialogFormVisible">
@@ -121,7 +213,7 @@
 </template>
 
 <script>
-import { volunteers_team, team_member, volunteers_team_check } from '@/api/yunzhijia'
+import { volunteers_team, need_type, token, team_member, volunteers_team_check, get_area } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -138,6 +230,8 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
   acc[cur.key] = cur.display_name
   return acc
 }, {})
+
+var teamList = []
 
 export default {
   name: 'postulant-team',
@@ -158,6 +252,50 @@ export default {
   },
   data () {
     return {
+      fileList: [],
+      dialogFormVisible1: false,
+      upData: {
+        token: ''
+      },
+      team: {
+        team_name: '',
+        description: '',
+        type_id: '',
+        type: 1,
+        status: '',
+        team_leader_id: ''
+      },
+      typesss: [{
+        label: '普通团队',
+        value: 1
+      }, {
+        label: '行政团队',
+        value: 2
+      }],
+      statusList: [{
+        label: '0',
+        value: '审核中'
+      }, {
+        label: 1,
+        value: '审核成功'
+      }, {
+        label: 2,
+        value: '审核失败'
+      }],
+      teamList,
+      images: '',
+      areaList: [],
+      types: [],
+      temp: {
+        avatar: '',
+        username: '',
+        password: '',
+        mobile: '',
+        identity_card: '',
+        type: '2',
+        team_id: '',
+        area_id: []
+      },
       numbers: [],
       dialogFormVisible: false,
       tableKey: 0,
@@ -180,8 +318,56 @@ export default {
   },
   created () {
     this.getList()
+    this.getArea()
+    this.getNeedType()
+    this.getToken()
   },
   methods: {
+    handleUpdate (row) {
+      this.temp = Object.assign({}, row) // copy obj
+      this.dialogFormVisible1 = true
+    },
+    getNeedType () {
+      need_type().then(res => {
+        this.types = res.result
+      })
+    },
+    /* 获取地理位置 */
+    getArea () {
+      get_area().then(response => {
+        // this.areaList = response.result
+        this.areaList.push(response.result)
+        // console.log();
+      })
+    },
+    beforeAvatarUpload1 (file) {
+      const isLt2M = file.size / 1024 / 1024 < 2
+      if (!isLt2M) {
+        this.$message.error('上传头像图片大小不能超过 2MB!')
+      }
+      return isLt2M
+    },
+    handleAvatarSuccess1 (res, file) {
+      this.fileList.push({ name: 'food.jpeg', url: URL.createObjectURL(file.raw) })
+      this.temp.avatar = res.key
+    },
+    beforeAvatarUpload (file) {
+      const isLt2M = file.size / 1024 / 1024 < 2
+      if (!isLt2M) {
+        this.$message.error('上传头像图片大小不能超过 2MB!')
+      }
+      return isLt2M
+    },
+    handleAvatarSuccess (res, file) {
+      this.images = URL.createObjectURL(file.raw)
+      this.temp.avatar = res.key
+    },
+    /* 获取 七牛云token */
+    getToken () {
+      token().then(res => {
+        this.upData.token = res.result
+      })
+    },
     getNumber (id) {
       team_member({ team_id: id, p: 1, row: 99999 }).then(response => {
         this.numbers = response.result.list
@@ -216,6 +402,10 @@ export default {
         this.list = response.result.list
         this.total = response.result.count
         this.listLoading = false
+        /* 下拉框 赋值 */
+        response.result.list.forEach(item => {
+          teamList.push({ key: item.id, display_name: item.team_name })
+        });
       }).catch(err => {
         this.listLoading = false
       })
@@ -273,8 +463,32 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .fixed-width .el-button--mini {
   width: auto;
+}
+
+/deep/.avatar-uploader .el-upload {
+  border: 1px dashed #000000;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+/deep/.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+/deep/.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+/deep/.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
 }
 </style>

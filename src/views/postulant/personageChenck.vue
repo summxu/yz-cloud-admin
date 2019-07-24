@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-24 20:33:19
+ * @Last Modified time: 2019-07-24 11:43:40
  */
 <template>
   <div class="app-container">
@@ -24,13 +24,7 @@
         icon="el-icon-search"
         @click="handleFilter"
       >{{ $t('table.search') }}</el-button>
-      <el-button
-        class="filter-item"
-        style="margin-left: 10px;"
-        type="primary"
-        icon="el-icon-edit"
-        @click="handleCreate"
-      >{{ $t('table.add') }}</el-button>
+
       <el-button
         v-waves
         :loading="downloadLoading"
@@ -46,23 +40,19 @@
       v-loading="listLoading"
       :data="list"
       border
-      fit
       size="mini"
+      fit
       highlight-current-row
       style="width: 100%;"
       @sort-change="sortChange"
     >
       <el-table-column
         :label="$t('table.id')"
-        prop="id"
         sortable="custom"
         align="center"
         width="80"
-      >
-        <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
-        </template>
-      </el-table-column>
+        type="index"
+      ></el-table-column>
       <el-table-column label="用户名" min-width="100px">
         <template slot-scope="{row}">
           <span>{{ row.username }}</span>
@@ -127,12 +117,11 @@
       <el-table-column
         :label="$t('table.actions')"
         align="center"
-        width="150"
+        width="0"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
-          <el-button type="danger" size="mini" @click="delUser(row)">移除</el-button>
+          <el-button type="success" size="mini" @click="check_user(row)">审核</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -145,77 +134,6 @@
       :limit.sync="listQuery.row"
       @pagination="getList"
     />
-
-    <!-- 模态窗 -->
-    <el-dialog class="model" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form
-        ref="dataForm"
-        :model="temp"
-        label-position="right"
-        label-width="120px"
-        style="width: 400px; margin-left:50px;"
-      >
-        <el-form-item label="身份类型" prop="type">
-          <el-select v-model="temp.type" class="filter-item" placeholder="请选择">
-            <el-option
-              v-for="item in calendarTypeOptions"
-              :key="item.key"
-              :label="item.display_name"
-              :value="item.key"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="头像" prop="title">
-          <el-upload
-            class="avatar-uploader"
-            action="http://up.qiniup.com/"
-            :show-file-list="false"
-            :data="upData"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload"
-          >
-            <img v-if="images" :src="images" class="avatar" />
-            <i v-else class="el-icon-plus avatar-uploader-icon" />
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="所属团队" prop="id">
-          <el-select v-model="temp.team_id" class="filter-item" placeholder="请选择">
-            <el-option
-              v-for="item in teamList"
-              :key="item.key"
-              :label="item.display_name"
-              :value="item.key"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="所属区域" prop="id">
-          <el-cascader
-            v-model="temp.area_id"
-            :props="{ checkStrictly: true }"
-            :options="areaList"
-            clearable
-          ></el-cascader>
-        </el-form-item>
-
-        <el-form-item label="用户姓名" prop="title">
-          <el-input v-model="temp.username" />
-        </el-form-item>
-        <el-form-item label="密码" prop="title">
-          <el-input type="password" v-model="temp.password" />
-        </el-form-item>
-        <el-form-item label="登陆手机号" prop="title">
-          <el-input v-model="temp.mobile" />
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">{{ $t('table.cancel') }}</el-button>
-        <el-button
-          type="primary"
-          @click="dialogStatus=='create'?addXzmember():updateData()"
-        >{{ $t('table.confirm') }}</el-button>
-      </div>
-    </el-dialog>
 
     <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
       <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
@@ -230,14 +148,16 @@
 </template>
 
 <script>
-import { userIndex, update_user, get_area, token, add_xzmember, remove_xzmember, volunteers_team } from '@/api/yunzhijia'
+import { check_index, check_user } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 const calendarTypeOptions = [
-  { key: '1', display_name: '团员' },
-  { key: '2', display_name: '团队长' }
+  { key: 'CN', display_name: 'China' },
+  { key: 'US', display_name: 'USA' },
+  { key: 'JP', display_name: 'Japan' },
+  { key: 'EU', display_name: 'Eurozone' }
 ]
 
 // arr to obj, such as { CN : "China", US : "USA" }
@@ -246,10 +166,8 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
   return acc
 }, {})
 
-var teamList = []
-
 export default {
-  name: 'Administrative',
+  name: 'Personage',
   components: { Pagination },
   directives: { waves },
   filters: {
@@ -267,34 +185,26 @@ export default {
   },
   data () {
     return {
-      images: '',
-      upData: {
-        token: ''
-      },
       tableKey: 0,
       list: null,
       total: 0,
       listLoading: true,
-      areaList: [],
       listQuery: {
         p: 1,
         row: 20,
-        type: 2,
+        type: 1,
         name: undefined
       },
       calendarTypeOptions,
-      teamList,
       statusOptions: ['published', 'draft', 'deleted'],
-
       temp: {
-        avatar: '',
-        username: '',
-        password: '',
-        mobile: '',
-        identity_card: '',
-        type: '2',
-        team_id: '',
-        area_id: []
+        id: undefined,
+        importance: 1,
+        remark: '',
+        timestamp: new Date(),
+        title: '',
+        type: '',
+        status: 'published'
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -304,77 +214,28 @@ export default {
       },
       dialogPvVisible: false,
       pvData: [],
+
       downloadLoading: false
     }
   },
   created () {
-    this.getXzteam()
     this.getList()
-    this.getArea()
-    this.getToken()
   },
   methods: {
-    beforeAvatarUpload (file) {
-      const isLt2M = file.size / 1024 / 1024 < 2
-      if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
+    /* 审核用户 */
+    check_user (row) {
+      let params = {
+        id: row.id,
+        is_society_vol: 1
       }
-      return isLt2M
-    },
-    handleAvatarSuccess (res, file) {
-      this.images = URL.createObjectURL(file.raw)
-      this.temp.avatar = res.key
-    },
-    /* 获取 七牛云token */
-    getToken () {
-      token().then(res => {
-        this.upData.token = res.result
-      })
-    },
-    delUser (row) {
-      remove_xzmember({ user_id: row.id }).then(res => {
-        this.$notify({
-          title: '成功',
-          message: '删除成功',
-          type: 'success',
-          duration: 2000
-        })
-        this.getList()
-      })
-    },
-    /* 获取地理位置 */
-    getArea () {
-      get_area().then(response => {
-        // this.areaList = response.result
-        this.areaList.push(response.result)
-        // console.log();
-      })
-    },
-    /* 行政志愿者团队 */
-    getXzteam () {
-      volunteers_team({
-        p: 1,
-        row: 20,
-        type: 2
-      }).then(response => {
-        response.result.list.forEach(item => {
-          teamList.push({ key: item.id, display_name: item.team_name })
-        });
-      })
-    },
-    /* 添加 志愿者 */
-    addXzmember () {
-      this.temp.area_id = this.temp.area_id[this.temp.area_id - 1]
-      this.temp.user_name = this.temp.username
-      add_xzmember(this.temp).then(response => {
-        this.dialogFormVisible = false
+      check_user(params).then(res => {
         this.$message.success(res.msg)
         this.getList()
       })
     },
     getList () {
       this.listLoading = true
-      userIndex(this.listQuery).then(response => {
+      check_index(this.listQuery).then(response => {
         this.list = response.result.list
         this.total = response.result.count
         this.listLoading = false
@@ -404,17 +265,16 @@ export default {
     resetTemp () {
       this.temp = {
         id: undefined,
-        avatar: '',
-        username: '',
-        password: '',
-        mobile: '',
-        identity_card: '',
-        type: '2',
-        team_id: '',
-        area_id: []
+        importance: 1,
+        remark: '',
+        timestamp: new Date(),
+        title: '',
+        status: 'published',
+        type: ''
       }
     },
     handleCreate () {
+      this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -426,7 +286,6 @@ export default {
         if (valid) {
           this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
           this.temp.author = 'vue-element-admin'
-          this.temp.user_name = this.temp.username
           createArticle(this.temp).then(() => {
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
@@ -440,49 +299,7 @@ export default {
         }
       })
     },
-    handleUpdate (row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
-    },
-    updateData () {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          var tempData = Object.assign({}, this.temp)
-          tempData.type = this.temp.type_id
-          tempData.is_society_vol = this.temp.is_society_vol_id
-          tempData.service_type_id = this.temp.service_type_id_id
-          tempData.user_name = this.temp.username
 
-          update_user(tempData).then(() => {
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '更新成功',
-              type: 'success',
-              duration: 2000
-            })
-          })
-        }
-      })
-    },
-    handleDelete (row) {
-      this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
-      })
-      const index = this.list.indexOf(row)
-      this.list.splice(index, 1)
-    },
     handleFetchPv (pv) {
       fetchPv(pv).then(response => {
         this.pvData = response.data.pvData
@@ -516,34 +333,5 @@ export default {
 }
 </script>
 
-<style scoped lang="less">
-/deep/.model .el-select .el-input__inner,
-/deep/.model .el-cascader .el-input__inner {
-  width: 278px;
-  // width: 100%;
-}
-
-/deep/.avatar-uploader .el-upload {
-  border: 1px dashed #000000;
-  border-radius: 6px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-/deep/.avatar-uploader .el-upload:hover {
-  border-color: #409eff;
-}
-/deep/.avatar-uploader-icon {
-  font-size: 28px;
-  color: #8c939d;
-  width: 178px;
-  height: 178px;
-  line-height: 178px;
-  text-align: center;
-}
-/deep/.avatar {
-  width: 178px;
-  height: 178px;
-  display: block;
-}
+<style scoped>
 </style>

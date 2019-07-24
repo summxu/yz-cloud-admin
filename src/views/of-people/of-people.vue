@@ -95,7 +95,7 @@
       <el-table-column
         :label="$t('table.actions')"
         align="center"
-        width="150"
+        width="230"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
@@ -107,6 +107,7 @@
             @click="handleUpdate(row)"
           >回复</el-button>
           <el-button type="danger" size="mini" @click="delNeed(row)">删除</el-button>
+          <el-button type="primary" size="mini" @click="handleEdit(row)">编辑</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -119,6 +120,41 @@
       :limit.sync="listQuery.row"
       @pagination="getList"
     />
+
+    <!-- 模态窗 -->
+    <el-dialog title="编辑需求" :visible.sync="dialogFormVisiblea">
+      <el-form
+        ref="dataForm"
+        :model="edit"
+        label-position="right"
+        label-width="120px"
+        style="width: 80%; margin-left:50px;"
+      >
+        <el-form-item label="名称">
+          <el-input v-model="edit.name" placeholder="请输入名称" />
+        </el-form-item>
+        <el-form-item label="详情">
+          <el-input
+            v-model="edit.detail"
+            :autosize="{ minRows: 3, maxRows: 10}"
+            type="textarea"
+            placeholder="请输入回复内容"
+          />
+        </el-form-item>
+        <el-form-item label="回复">
+          <el-input
+            v-model="edit.reply"
+            :autosize="{ minRows: 3, maxRows: 10}"
+            type="textarea"
+            placeholder="请输入回复内容"
+          />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisiblea = false">{{ $t('table.cancel') }}</el-button>
+        <el-button type="primary" @click="updateFun">{{ $t('table.confirm') }}</el-button>
+      </div>
+    </el-dialog>
 
     <!-- 模态窗 -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
@@ -158,7 +194,7 @@
 </template>
 
 <script>
-import { easy_need, reply_need, del_need } from '@/api/yunzhijia'
+import { easy_need, reply_need, del_need, update_need } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -199,6 +235,7 @@ export default {
       list: null,
       total: 0,
       listLoading: true,
+      dialogFormVisiblea: false,
       listQuery: {
         p: 1,
         row: 20
@@ -208,6 +245,13 @@ export default {
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       statusOptions: ['published', 'draft', 'deleted'],
       showReviewer: false,
+      edit: {
+        id: undefined,
+        status: 1,
+        name: '',
+        detail: '',
+        reply: ''
+      },
       temp: {
         id: undefined,
         importance: 1,
@@ -237,6 +281,23 @@ export default {
     this.getList()
   },
   methods: {
+    /* 处理编辑 */
+    handleEdit (row) {
+      this.edit = { ...row }
+      this.dialogFormVisiblea = true
+    },
+    /* 更新数据 */
+    updateFun () {
+      if (this.edit.replay == '') {
+        this.edit.status = 0
+      } else {
+        this.edit.status = 1
+      }
+      update_need(this.edit).then(res => {
+        this.$message.success(res.msg)
+        this.dialogFormVisiblea = false
+      })
+    },
     getList () {
       this.listLoading = true
       easy_need(this.listQuery).then(response => {

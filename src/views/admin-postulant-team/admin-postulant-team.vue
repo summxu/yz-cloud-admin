@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-23 15:48:11
+ * @Last Modified time: 2019-07-24 20:37:15
  */
 <template>
   <div class="app-container">
@@ -141,6 +141,19 @@
         <el-form-item label="团队名称" prop="title">
           <el-input v-model="team.team_name" />
         </el-form-item>
+        <el-form-item label="团徽" prop="title">
+          <el-upload
+            class="avatar-uploader"
+            action="http://up.qiniup.com/"
+            :show-file-list="false"
+            :data="upData1"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <img v-if="images" :src="images" class="avatar" />
+            <i v-else class="el-icon-plus avatar-uploader-icon" />
+          </el-upload>
+        </el-form-item>
         <el-form-item label="团队简介描述" prop="title">
           <el-input type="textarea" v-model="team.description" />
         </el-form-item>
@@ -211,7 +224,7 @@
 </template>
 
 <script>
-import { volunteers_team, remove_xzmember, team_member, token, need_type, cat, volunteers_team_check, addVal, add_xzteam, updateVal, delVal } from '@/api/yunzhijia'
+import { volunteers_team, remove_xzmember, userIndex, team_member, token, need_type, cat, volunteers_team_check, addVal, add_xzteam, updateVal, delVal } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -255,6 +268,10 @@ export default {
         type_id: ''
       },
       types: [],
+      images: '',
+      upData1: {
+        token: ''
+      },
       upData: {
         admin_id: getAdminId()
       },
@@ -286,8 +303,27 @@ export default {
     this.getList()
     this.getToken()
     this.getNeedType()
+    this.getmemberList()
+    this.getToken1()
   },
   methods: {
+    beforeAvatarUpload (file) {
+      const isLt2M = file.size / 1024 / 1024 < 2
+      if (!isLt2M) {
+        this.$message.error('上传头像图片大小不能超过 2MB!')
+      }
+      return isLt2M
+    },
+    handleAvatarSuccess (res, file) {
+      this.images = URL.createObjectURL(file.raw)
+      this.team.avatar = res.key
+    },
+    /* 获取 七牛云token */
+    getToken1 () {
+      token().then(res => {
+        this.upData1.token = res.result
+      })
+    },
     delUser (row) {
       remove_xzmember({ user_id: row.user_id, team_id: this.team_id }).then(res => {
         this.getNumber(this.team_id)
@@ -312,6 +348,22 @@ export default {
           description: '',
           type_id: ''
         }
+      })
+    },
+    getmemberList () {
+      this.listLoading = true
+      let parmas = {
+        p: 1,
+        row: 20,
+        type: 2,
+        name: undefined
+      }
+      userIndex(parmas).then(response => {
+        this.userList = response.result.list
+        this.total = response.result.count
+        this.listLoading = false
+      }).catch(err => {
+        this.listLoading = false
       })
     },
     getNeedType () {
@@ -435,8 +487,32 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .fixed-width .el-button--mini {
   width: auto;
+}
+
+/deep/.avatar-uploader .el-upload {
+  border: 1px dashed #000000;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+/deep/.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+/deep/.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+/deep/.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
 }
 </style>
