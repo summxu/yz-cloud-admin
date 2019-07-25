@@ -69,21 +69,22 @@ personage/*
         </template>
       </el-table-column>
 
-      <el-table-column label="详情" min-width="100px" align="center">
+      <!-- <el-table-column label="详情" min-width="100px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.content }}</span>
         </template>
-      </el-table-column>
+      </el-table-column>-->
 
       <!-- 操作 -->
 
       <el-table-column
         :label="$t('table.actions')"
         align="center"
-        width="150"
+        width="250"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
+          <el-button size="mini" @click="showDetail(row)">查看详情</el-button>
           <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
           <el-button type="danger" size="mini" @click="delUser(row)">移除</el-button>
         </template>
@@ -100,7 +101,12 @@ personage/*
     />
 
     <!-- 模态窗 -->
-    <el-dialog class="model" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog
+      :before-close="close"
+      class="model"
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogFormVisible"
+    >
       <el-form
         ref="dataForm"
         :model="temp"
@@ -124,6 +130,7 @@ personage/*
         <el-button @click="dialogFormVisible = false">{{ $t('table.cancel') }}</el-button>
         <el-button
           type="primary"
+          v-if="!isNobtn"
           @click="dialogStatus==='create'?createData():updateData()"
         >{{ $t('table.confirm') }}</el-button>
       </div>
@@ -211,6 +218,7 @@ export default {
         update: '编辑',
         create: '创建'
       },
+      isNobtn: false,
       dialogPvVisible: false,
       pvData: [],
       rules: {
@@ -228,6 +236,14 @@ export default {
     this.getArea()
   },
   methods: {
+    close () {
+      this.dialogFormVisible = false
+      this.isNobtn = false
+    },
+    showDetail (row) {
+      this.isNobtn = true
+      this.handleUpdate(row)
+    },
     handleAvatarSuccess (res, file) {
       this.images = URL.createObjectURL(file.raw)
       this.temp.image = res.key
@@ -431,6 +447,9 @@ export default {
   // width: 100%;
 }
 
+.fixed-width .el-button--mini {
+  width: auto;
+}
 .editor {
   width: 700px;
   height: 400px;

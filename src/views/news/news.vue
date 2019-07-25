@@ -2,7 +2,7 @@
  * @Author: Chenxu
  * @Date: 2019-07-04 13:59:59
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-24 09:28:09
+ * @Last Modified time: 2019-07-25 19:18:39
  */
 <template>
   <div class="app-container">
@@ -63,7 +63,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="名字" width="150px" align="center">
+      <el-table-column label="名字" min-width="150px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.title }}</span>
         </template>
@@ -83,22 +83,23 @@
           <span>{{scope.row.sort}}</span>
         </template>
       </el-table-column>-->
-      <el-table-column label="内容" min-width="100px" align="center">
+      <!-- <el-table-column label="内容" min-width="100px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.content }}</span>
         </template>
-      </el-table-column>
+      </el-table-column>-->
 
       <!-- 操作 -->
 
       <el-table-column
         :label="$t('table.actions')"
         align="center"
-        width="150"
+        width="220"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
+          <el-button type="primary" size="mini" @click="showDetail(row)">查看详情</el-button>
+          <el-button size="mini" @click="handleUpdate(row)">编辑</el-button>
           <el-button type="danger" size="mini" @click="delUser(row)">移除</el-button>
         </template>
       </el-table-column>
@@ -114,7 +115,12 @@
     />
 
     <!-- 模态窗 -->
-    <el-dialog class="model" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog
+      :before-close="close"
+      class="model"
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogFormVisible"
+    >
       <el-form
         ref="dataForm"
         :model="temp"
@@ -171,6 +177,7 @@
         <el-button @click="dialogFormVisible = false">{{ $t('table.cancel') }}</el-button>
         <el-button
           type="primary"
+          v-if="!isNobtn"
           @click="dialogStatus==='create'?createData():updateData()"
         >{{ $t('table.confirm') }}</el-button>
       </div>
@@ -266,6 +273,7 @@ export default {
         is_top: 0,
         image: ''
       },
+      isNobtn: false,
       dialogFormVisible: false,
       dialogStatus: '',
       textMap: {
@@ -396,6 +404,14 @@ export default {
         })
       })
     },
+    close () {
+      this.dialogFormVisible = false
+      this.isNobtn = false
+    },
+    showDetail (row) {
+      this.isNobtn = true
+      this.handleUpdate(row)
+    },
     handleUpdate (row) {
       this.resetTemp()
       this.temp = { ...row } // copy obj
@@ -508,5 +524,9 @@ export default {
   width: 700px;
   height: 300px;
   margin-bottom: 50px;
+}
+
+.fixed-width .el-button--mini {
+  width: auto;
 }
 </style>

@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-24 19:56:14
+ * @Last Modified time: 2019-07-25 10:59:40
  */
 <template>
   <div class="app-container">
@@ -94,101 +94,14 @@
       @pagination="getList"
     />
 
-    <!-- 模态窗 -->
-    <el-dialog class="model" title="修改信息" :visible.sync="dialogFormVisible1">
-      <el-form
-        ref="dataForm"
-        :model="team"
-        label-position="right"
-        label-width="120px"
-        style="width: 400px; margin-left:50px;"
-      >
-        <el-form-item label="团队名称" prop="title">
-          <el-input v-model="team.team_name" />
-        </el-form-item>
-        <el-form-item label="团徽" prop="title">
-          <el-upload
-            class="avatar-uploader"
-            action="http://up.qiniup.com/"
-            :show-file-list="false"
-            :data="upData"
-            :on-success="handleAvatarSuccess1"
-            :before-upload="beforeAvatarUpload1"
-          >
-            <img v-if="images" :src="images" class="avatar" />
-            <i v-else class="el-icon-plus avatar-uploader-icon" />
-          </el-upload>
-        </el-form-item>
-        <!-- <el-form-item label="实践中心相册" prop="title">
-          <el-upload
-            class="avatar-uploader"
-            action="http://up.qiniup.com/"
-            :show-file-list="false"
-            :data="upData1"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload"
-            :file-list="fileList"
-          >
-            <el-button size="small" type="primary">点击上传</el-button>
-          </el-upload>
-        </el-form-item>-->
-        <el-form-item label="团队简介描述" prop="title">
-          <el-input type="textarea" v-model="team.description" />
-        </el-form-item>
-
-        <el-form-item label="团队类型" prop="type">
-          <el-select v-model="team.type_id" multiple class="filter-item" placeholder="请选择">
-            <el-option
-              v-for="item in types"
-              :key="item.id"
-              :label="item.type_name"
-              :value="item.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="团队类别" prop="type">
-          <el-select v-model="team.type" class="filter-item" placeholder="请选择">
-            <el-option
-              v-for="item in typesss"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="状态" prop="type">
-          <el-select v-model="team.status" class="filter-item" placeholder="请选择">
-            <el-option
-              v-for="item in statusList"
-              :key="item.value"
-              :label="item.lable"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="团队长" prop="type">
-          <el-select v-model="team.team_leader_id" class="filter-item" placeholder="请选择">
-            <el-option
-              v-for="item in statusList"
-              :key="item.value"
-              :label="item.lable"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible1 = false">{{ $t('table.cancel') }}</el-button>
-        <el-button type="primary" @click="updateData()">{{ $t('table.confirm') }}</el-button>
-      </div>
-    </el-dialog>
+    <!-- 修改 -->
+    <team-edit :id="rowId" v-show="editShow" @close="editClose" :show="editShow" />
 
     <!-- 模态窗 -->
     <el-dialog title="团队成员列表" :visible.sync="dialogFormVisible">
       <el-table :data="numbers" style="width: 100%;" max-height="350" v-loading="numberLoading">
         <el-table-column label="序号" type="index" width="150" align="center"></el-table-column>
-        <el-table-column prop="user_id" label="用户名：用户手机号" width="auto" align="left"></el-table-column>
+        <el-table-column prop="user_info" label="用户名：用户手机号" width="auto" align="left"></el-table-column>
         <el-table-column label="审核状态" width="120" align="center">
           <template slot-scope="scope">
             <el-tag type="success">{{scope.row.status}}</el-tag>
@@ -217,6 +130,7 @@ import { volunteers_team, need_type, token, team_member, volunteers_team_check, 
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import teamEdit from "./team-edit.vue";
 
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
@@ -235,7 +149,7 @@ var teamList = []
 
 export default {
   name: 'postulant-team',
-  components: { Pagination },
+  components: { Pagination, teamEdit },
   directives: { waves },
   filters: {
     statusFilter (status) {
@@ -257,31 +171,8 @@ export default {
       upData: {
         token: ''
       },
-      team: {
-        team_name: '',
-        description: '',
-        type_id: '',
-        type: 1,
-        status: '',
-        team_leader_id: ''
-      },
-      typesss: [{
-        label: '普通团队',
-        value: 1
-      }, {
-        label: '行政团队',
-        value: 2
-      }],
-      statusList: [{
-        label: '0',
-        value: '审核中'
-      }, {
-        label: 1,
-        value: '审核成功'
-      }, {
-        label: 2,
-        value: '审核失败'
-      }],
+      editShow: false,
+
       teamList,
       images: '',
       areaList: [],
@@ -308,6 +199,7 @@ export default {
         row: 20,
         type: 1
       },
+      rowId: '',
       calendarTypeOptions,
       statusOptions: ['published', 'draft', 'deleted'],
 
@@ -323,9 +215,14 @@ export default {
     this.getToken()
   },
   methods: {
+    editClose () {
+      this.editShow = false
+      this.getList()
+    },
     handleUpdate (row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.dialogFormVisible1 = true
+      this.editShow = true
+      /* 获取数据 */
+      this.rowId = row.id
     },
     getNeedType () {
       need_type().then(res => {
@@ -340,17 +237,7 @@ export default {
         // console.log();
       })
     },
-    beforeAvatarUpload1 (file) {
-      const isLt2M = file.size / 1024 / 1024 < 2
-      if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
-      }
-      return isLt2M
-    },
-    handleAvatarSuccess1 (res, file) {
-      this.fileList.push({ name: 'food.jpeg', url: URL.createObjectURL(file.raw) })
-      this.temp.avatar = res.key
-    },
+
     beforeAvatarUpload (file) {
       const isLt2M = file.size / 1024 / 1024 < 2
       if (!isLt2M) {

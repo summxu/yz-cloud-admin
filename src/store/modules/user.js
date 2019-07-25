@@ -44,8 +44,10 @@ const actions = {
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password }).then(response => {
         const { result } = response
+        /* vuex set token */
         commit('SET_TOKEN', result.token)
         commit('SET_ADMIN_ID', result.id)
+        /* cookies set token */
         setToken(result.token)
         setAdminId(result.id)
         resolve()

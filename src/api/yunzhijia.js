@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 17:00:12 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-24 21:28:44
+ * @Last Modified time: 2019-07-25 16:11:56
  */
 import request from '@/utils/request'
 
@@ -412,9 +412,67 @@ export function check_user (data) {
     data
   })
 }
+
 export function update_need (data) {
   return request({
     url: '/admin/Need/update_need',
+    method: 'post',
+    data
+  })
+}
+
+export function del_need_type (data) {
+  return request({
+    url: '/admin/Need/del_need_type',
+    method: 'post',
+    data
+  })
+}
+
+
+/* 所有成员 */
+export function user_id_name (data) {
+  return request({
+    url: '/admin/User/user_id_name',
+    method: 'post',
+    data
+  })
+}
+export function team_info (data) {
+  return request({
+    url: '/admin/volunteers/team_info',
+    method: 'post',
+    data
+  })
+}
+
+export function update_team (data) {
+  return request({
+    url: '/admin/Volunteers/update_team',
+    method: 'post',
+    data
+  })
+}
+
+export function edit_need (data) {
+  return request({
+    url: '/admin/Need/edit_need',
+    method: 'post',
+    data
+  })
+}
+
+export function need_detail (data) {
+  return request({
+    url: '/admin/Need/need_detail',
+    method: 'post',
+    data
+  })
+}
+
+export function need_info (data) {
+  return request({
+    url: '/admin/Need/need_info',
     method: 'post',
     data
   })

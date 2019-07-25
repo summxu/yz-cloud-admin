@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-24 20:37:15
+ * @Last Modified time: 2019-07-25 14:08:50
  */
 <template>
   <div class="app-container">
@@ -106,7 +106,7 @@
       <!-- 添加 -->
 
       <!-- 操作 -->
-      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button
             v-if="row.status == 1"
@@ -114,6 +114,8 @@
             size="mini"
             @click="viewNumbers(row)"
           >查看团队成员</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
+
           <el-button v-if="!row.status" type="success" size="mini" @click="agree(row)">通过</el-button>
           <el-button v-if="!row.status" type="danger" size="mini" @click="reject(row)">拒绝</el-button>
         </template>
@@ -175,6 +177,9 @@
       </div>
     </el-dialog>
 
+    <!-- 修改 -->
+    <team-edit :id="rowId" v-show="editShow" @close="editClose" :show="editShow" />
+
     <!-- 模态窗 -->
     <el-dialog title="团队成员列表" :visible.sync="dialogFormVisible">
       <el-upload
@@ -230,6 +235,8 @@ import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import axios from "@/utils/request";
 import { getToken, getAdminId } from '@/utils/auth'
+import teamEdit from "./team-edit.vue";
+
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
   { key: 'US', display_name: 'USA' },
@@ -245,7 +252,7 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 
 export default {
   name: 'admin-postulant-team',
-  components: { Pagination },
+  components: { Pagination, teamEdit },
   directives: { waves },
   filters: {
     statusFilter (status) {
@@ -267,6 +274,8 @@ export default {
         description: '',
         type_id: ''
       },
+      rowId: '',
+      editShow: false,
       types: [],
       images: '',
       upData1: {
@@ -307,6 +316,15 @@ export default {
     this.getToken1()
   },
   methods: {
+    editClose () {
+      this.editShow = false
+      this.getList()
+    },
+    handleUpdate (row) {
+      this.editShow = true
+      /* 获取数据 */
+      this.rowId = row.id
+    },
     beforeAvatarUpload (file) {
       const isLt2M = file.size / 1024 / 1024 < 2
       if (!isLt2M) {

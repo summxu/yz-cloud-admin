@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-14 11:29:10
+ * @Last Modified time: 2019-07-25 09:20:38
  */
 <template>
   <div class="app-container">
@@ -19,18 +19,19 @@
           type="primary"
           @click="updateData({type_name:item.type_name,id:item.id})"
         >修改</el-button>
+        <el-button type="danger" @click="delData(item.id)">删除</el-button>
       </el-form-item>
 
-      <el-form-item>
+      <!-- <el-form-item>
         <el-input v-model="temp_name" style="width: 300px;" />
         <el-button type="success" @click="addData">添加</el-button>
-      </el-form-item>
+      </el-form-item>-->
     </el-form>
   </div>
 </template>
 
 <script>
-import { need_type, edit_need_type } from '@/api/yunzhijia'
+import { need_type, edit_need_type, del_need_type } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -81,6 +82,18 @@ export default {
     this.getList()
   },
   methods: {
+    /* 删除 */
+    delData (id) {
+      del_need_type({ id: id }).then(res => {
+        this.getList()
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+      })
+    },
     getList () {
       this.listLoading = true
       need_type().then(response => {

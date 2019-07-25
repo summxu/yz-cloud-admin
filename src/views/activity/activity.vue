@@ -2,10 +2,44 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-15 16:19:29
+ * @Last Modified time: 2019-07-25 18:43:26
  */
 <template>
   <div class="app-container">
+    <div class="filter-container">
+      <!-- 条件查询 -->
+      <el-input
+        v-model="listQuery.name"
+        placeholder="请输入查询条件"
+        style="width: 300px;"
+        class="filter-item"
+        @keyup.enter.native="handleFilter"
+      />
+      <!-- 操作按钮 -->
+      <el-button
+        v-waves
+        class="filter-item"
+        type="primary"
+        icon="el-icon-search"
+        @click="handleFilter"
+      >{{ $t('table.search') }}</el-button>
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-edit"
+        @click="centerDialogVisible = true"
+      >{{ $t('table.add') }}</el-button>
+      <el-button
+        v-waves
+        :loading="downloadLoading"
+        class="filter-item"
+        type="primary"
+        icon="el-icon-download"
+        @click="handleDownload"
+      >{{ $t('table.export') }}</el-button>
+    </div>
+
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -14,7 +48,6 @@
       fit
       highlight-current-row
       style="width: 100%;"
-      height="800"
       @sort-change="sortChange"
     >
       <el-table-column
@@ -29,12 +62,11 @@
           <span>{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="申请方名称" min-width="100px" align="center">
+      <!-- <el-table-column label="申请方名称" min-width="100px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.apply_name }}</span>
-          <!-- <span>{{scope.row.type_id.toString()}}</span> -->
         </template>
-      </el-table-column>
+      </el-table-column>-->
 
       <el-table-column label="申请方 姓名：电话" min-width="150px" align="center">
         <template slot-scope="scope">
@@ -52,7 +84,7 @@
           <span>{{ scope.row.address }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="需求详情" min-width="180px" align="center">
+      <!-- <el-table-column label="需求详情" min-width="180px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.detail }}</span>
         </template>
@@ -66,14 +98,14 @@
         <template slot-scope="scope">
           <span>{{ scope.row.end_time }}</span>
         </template>
-      </el-table-column>
+      </el-table-column>-->
       <el-table-column label="需求人数" min-width="70px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.people_count }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="上级区域" min-width="70px" align="center">
+      <!-- <el-table-column label="上级区域" min-width="70px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.up_area_id }}</span>
         </template>
@@ -97,7 +129,7 @@
         <template slot-scope="scope">
           <span>{{ scope.row.com_time }}</span>
         </template>
-      </el-table-column>
+      </el-table-column>-->
 
       <el-table-column label="图片组" min-width="100px" align="center">
         <template slot-scope="scope">
@@ -110,7 +142,7 @@
           />
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" width="150px" align="center">
+      <el-table-column label="创建时间" width="160px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.createtime }}</span>
         </template>
@@ -119,6 +151,7 @@
         <template slot-scope="scope">
           <el-tag v-if="scope.row.status == '招募中'" type="success">{{scope.row.status}}</el-tag>
           <el-tag v-if="scope.row.status == '审核中'">{{scope.row.status}}</el-tag>
+          <span v-if="scope.row.status == '已完成'">{{scope.row.status}}</span>
           <el-tag v-if="scope.row.status == '撤销'" type="danger">{{scope.row.status}}</el-tag>
         </template>
       </el-table-column>
@@ -126,7 +159,9 @@
       <!-- 操作 -->
       <el-table-column label="操作" align="center" width="300" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
+          <el-button size="mini" @click="showDetail(row)">查看详情</el-button>
           <el-button type="primary" size="mini" @click="viewNumbers(row)">查看成员</el-button>
+          <el-button type="success" size="mini" @click="handEdit(row)">编辑</el-button>
           <el-button v-if="row.status == '审核中'" type="success" size="mini" @click="agree(row)">审核</el-button>
           <el-button v-if="row.status == '审核中'" type="danger" size="mini" @click="reject(row)">撤销</el-button>
           <el-button v-if="row.is_top == '0'" size="mini" @click="top(row,1)">置顶</el-button>
@@ -164,6 +199,10 @@
       </div>
     </el-dialog>
 
+    <el-dialog :visible.sync="centerDialogVisible" :before-close="close" width="55%" center>
+      <out-modal @close="close" :show="show" :id="rowId"></out-modal>
+    </el-dialog>
+
     <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
       <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
         <el-table-column prop="key" label="Channel" />
@@ -181,6 +220,7 @@ import { need_index, check_need, need_member, ce_need, need_top } from '@/api/yu
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import outModal from "./outModal.vue";
 
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
@@ -197,7 +237,7 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 
 export default {
   name: 'activity',
-  components: { Pagination },
+  components: { Pagination, outModal },
   directives: { waves },
   filters: {
     statusFilter (status) {
@@ -214,13 +254,16 @@ export default {
   },
   data () {
     return {
+      centerDialogVisible: false,
       numbers: [],
+      rowId: undefined,
       dialogFormVisible: false,
       tableKey: 0,
       list: null,
       total: 0,
       listLoading: true,
       numberLoading: true,
+      show: false,
       listQuery: {
         p: 1,
         row: 20
@@ -237,6 +280,23 @@ export default {
     this.getList()
   },
   methods: {
+    /* 查看详情 */
+    showDetail (row) {
+      this.rowId = row.id
+      this.show = true
+      this.centerDialogVisible = true;
+    },
+    /* 打开编辑窗口 */
+    handEdit (row) {
+      this.rowId = row.id
+      this.centerDialogVisible = true;
+    },
+    close () {
+      this.centerDialogVisible = false;
+      this.getList()
+      this.show = false
+      this.rowId = undefined
+    },
     top (row, top) {
       need_top({ top: top, id: row.id }).then(res => {
         this.getList()
@@ -280,6 +340,7 @@ export default {
       this.listLoading = true
       need_index(this.listQuery).then(response => {
         this.list = response.result.list
+        // this.list.detail = this.list.detail.splice(0, 10)
         this.total = response.result.count
         this.listLoading = false
       }).catch(err => {
