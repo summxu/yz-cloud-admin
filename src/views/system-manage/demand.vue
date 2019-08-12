@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-25 09:20:38
+ * @Last Modified time: 2019-07-26 09:50:21
  */
 <template>
   <div class="app-container">
@@ -22,10 +22,10 @@
         <el-button type="danger" @click="delData(item.id)">删除</el-button>
       </el-form-item>
 
-      <!-- <el-form-item>
+      <el-form-item>
         <el-input v-model="temp_name" style="width: 300px;" />
         <el-button type="success" @click="addData">添加</el-button>
-      </el-form-item>-->
+      </el-form-item>
     </el-form>
   </div>
 </template>
@@ -102,7 +102,20 @@ export default {
       })
     },
     addData () {
-      this.getList()
+      let params = {
+        type_name: this.temp_name
+      }
+      edit_need_type(params).then(() => {
+        this.dialogFormVisible = false
+        this.temp_name = ''
+        this.getList()
+        this.$notify({
+          title: '成功',
+          message: '添加成功',
+          type: 'success',
+          duration: 2000
+        })
+      })
     },
     updateData (obj) {
       edit_need_type(obj).then(() => {

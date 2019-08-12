@@ -2,7 +2,7 @@
  * @Author: Chenxu
  * @Date: 2019-07-04 13:59:59
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-25 19:18:39
+ * @Last Modified time: 2019-08-05 10:40:18
  */
 <template>
   <div class="app-container">
@@ -15,7 +15,9 @@
         class="filter-item"
         @keyup.enter.native="handleFilter"
       />
-
+      <el-select v-model="listQuery.is_top" class="filter-item" placeholder="置顶状态">
+        <el-option v-for="item in tops" :key="item.value" :label="item.label" :value="item.value" />
+      </el-select>
       <!-- 操作按钮 -->
       <el-button
         v-waves
@@ -53,15 +55,11 @@
     >
       <el-table-column
         :label="$t('table.id')"
-        prop="id"
+        type="index"
         sortable="custom"
         align="center"
         width="80"
-      >
-        <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
-        </template>
-      </el-table-column>
+      ></el-table-column>
 
       <el-table-column label="名字" min-width="150px" align="center">
         <template slot-scope="scope">
@@ -116,6 +114,7 @@
 
     <!-- 模态窗 -->
     <el-dialog
+      top="3vh"
       :before-close="close"
       class="model"
       :title="textMap[dialogStatus]"
@@ -126,7 +125,7 @@
         :model="temp"
         label-position="right"
         label-width="120px"
-        style="width: 400px; margin-left:50px;"
+        style="margin:0 50px;"
       >
         <el-form-item label="标题" prop="title">
           <el-input v-model="temp.title" />
@@ -231,6 +230,15 @@ export default {
       return calendarTypeKeyValue[type]
     }
   },
+  watch: {
+    'listQuery': {
+      handler (val) {
+        console.log(val);
+        this.getList()
+      },
+      deep: true
+    }
+  },
   data () {
     return {
       props: { multiple: true },
@@ -248,6 +256,17 @@ export default {
           ]
         }
       },
+      tops: [{
+        value: '',
+        label: '全部'
+      }, {
+        value: 1,
+        label: '置顶'
+      },
+      {
+        value: 0,
+        label: '未置顶'
+      }],
       areaList: [],
       images: '',
       upData: {
@@ -261,7 +280,8 @@ export default {
       listQuery: {
         p: 1,
         row: 20,
-        order: 'url.id desc'
+        order: 'url.id desc',
+        is_top: ''
       },
       calendarTypeOptions,
       statusOptions: ['published', 'draft', 'deleted'],
@@ -350,6 +370,9 @@ export default {
         this.list = response.result.list
         this.total = response.result.count
         this.listLoading = false
+      }).catch(err => {
+        this.listLoading = false
+        this.list = []
       })
     },
     handleFilter () {
@@ -391,10 +414,11 @@ export default {
     },
     createData () {
       delete this.temp.id
-      const tempObj = { area_id: this.temp.area_id[this.temp.area_id.length - 1], ...this.temp }
+      // const tempObj = { area_id: this.temp.area_id[this.temp.area_id.length - 1], ...this.temp }
+      const tempObj = { area_id: this.temp.area_id, ...this.temp }
 
       add_news(tempObj).then((res) => {
-        this.list.unshift(this.temp)
+        this.getList()
         this.dialogFormVisible = false
         this.$notify({
           title: '成功',
@@ -516,12 +540,12 @@ export default {
 /deep/.model .el-input__inner,
 /deep/.model .el-textarea__inner,
 /deep/.model .el-select .el-input__inner,
-/deep/.model .el-cascader .el-input__inner {
-  width: 600px;
-  // width: 100%;
+/deep/.model .el-cascader {
+  // width: 600px;
+  width: 100%;
 }
 .editor {
-  width: 700px;
+  width: 100%;
   height: 300px;
   margin-bottom: 50px;
 }

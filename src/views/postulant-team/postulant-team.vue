@@ -2,10 +2,56 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-25 10:59:40
+ * @Last Modified time: 2019-07-28 14:03:58
  */
 <template>
   <div class="app-container">
+    <div class="filter-container">
+      <!-- 条件查询 -->
+      <el-input
+        v-model="listQuery.name"
+        placeholder="请输入查询条件"
+        style="width: 300px;"
+        class="filter-item"
+        @keyup.enter.native="handleFilter"
+      />
+
+      <el-select v-model="listQuery.type_id" class="filter-item" placeholder="选择服务类型">
+        <el-option v-for="item in types" :key="item.id" :label="item.type_name" :value="item.id" />
+      </el-select>
+      <el-select v-model="listQuery.status" class="filter-item" placeholder="选择审核状态">
+        <el-option
+          v-for="item in statuss"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        />
+      </el-select>
+
+      <!-- 操作按钮 -->
+      <el-button
+        v-waves
+        class="filter-item"
+        type="primary"
+        icon="el-icon-search"
+        @click="handleFilter"
+      >{{ $t('table.search') }}</el-button>
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-edit"
+        @click="handleCreate"
+      >{{ $t('table.add') }}</el-button>
+      <el-button
+        v-waves
+        :loading="downloadLoading"
+        class="filter-item"
+        type="primary"
+        icon="el-icon-download"
+        @click="handleDownload"
+      >{{ $t('table.export') }}</el-button>
+    </div>
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -70,7 +116,7 @@
       <!-- 修改狂 -->
 
       <!-- 操作 -->
-      <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="250" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button
             v-if="row.status == 1"
@@ -81,6 +127,7 @@
           <el-button v-if="!row.status" type="success" size="mini" @click="agree(row)">通过</el-button>
           <el-button v-if="!row.status" type="danger" size="mini" @click="reject(row)">拒绝</el-button>
           <el-button type="primary" size="mini" @click="handleUpdate(row)">修改</el-button>
+          <el-button type="danger" size="mini" @click="del_team(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -126,7 +173,7 @@
 </template>
 
 <script>
-import { volunteers_team, need_type, token, team_member, volunteers_team_check, get_area } from '@/api/yunzhijia'
+import { volunteers_team, need_type, del_team, token, team_member, volunteers_team_check, get_area } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -164,9 +211,37 @@ export default {
       return calendarTypeKeyValue[type]
     }
   },
+  watch: {
+    'listQuery': {
+      handler (val) {
+        this.getList()
+      },
+      deep: true
+    }
+  },
   data () {
     return {
       fileList: [],
+      statuss: [{
+        value: '',
+        label: '全部'
+      }, {
+        value: 0,
+        label: '审核中'
+      },
+      {
+        value: 1,
+        label: '招募中'
+      }, {
+        value: 2,
+        label: '进行中'
+      }, {
+        value: 3,
+        label: '已完成'
+      }, {
+        value: 4,
+        label: '撤销'
+      }],
       dialogFormVisible1: false,
       upData: {
         token: ''
@@ -197,7 +272,9 @@ export default {
       listQuery: {
         p: 1,
         row: 20,
-        type: 1
+        type: 1,
+        type_id: '',
+        status: ''
       },
       rowId: '',
       calendarTypeOptions,
@@ -215,6 +292,13 @@ export default {
     this.getToken()
   },
   methods: {
+    /* 删除 */
+    del_team (row) {
+      del_team({ id: row.id }).then(res => {
+        this.$message.success(res.msg)
+        this.getList()
+      })
+    },
     editClose () {
       this.editShow = false
       this.getList()
@@ -227,6 +311,10 @@ export default {
     getNeedType () {
       need_type().then(res => {
         this.types = res.result
+        this.types.unshift({
+          type_name: '全部',
+          value: ''
+        })
       })
     },
     /* 获取地理位置 */
@@ -295,6 +383,7 @@ export default {
         });
       }).catch(err => {
         this.listLoading = false
+        this.list = []
       })
     },
     handleFilter () {

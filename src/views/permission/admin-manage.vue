@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-18 15:23:31
+ * @Last Modified time: 2019-07-31 14:42:26
  */
 <template>
   <div class="app-container">
@@ -53,14 +53,14 @@
     >
       <el-table-column
         :label="$t('table.id')"
-        prop="id"
+        type="index"
         sortable="custom"
         align="center"
         width="80"
       >
-        <template slot-scope="scope">
+        <!-- <template slot-scope="scope">
           <span>{{ scope.row.id }}</span>
-        </template>
+        </template>-->
       </el-table-column>
 
       <el-table-column label="用户名" width="150px" align="center">
@@ -94,12 +94,18 @@
       <el-table-column
         :label="$t('table.actions')"
         align="center"
-        width="150"
+        width="220"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
           <el-button v-if="row.is_free == '正常'" type="danger" size="mini" @click="delUser(row,1)">冻结</el-button>
+          <el-button
+            v-if="row.is_free == '正常'"
+            type="danger"
+            size="mini"
+            @click="delAdmin(row,1)"
+          >删除</el-button>
           <el-button
             type="success"
             v-if="row.is_free != '正常'"
@@ -171,7 +177,7 @@
 </template>
 
 <script>
-import { add_admin, roleIndex, admin_index, update_admin, get_area, open_free_admin, cat, token } from '@/api/yunzhijia'
+import { add_admin, roleIndex, admin_index, del_admin, update_admin, get_area, open_free_admin, cat, token } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -281,6 +287,17 @@ export default {
         this.upData.token = res.result
       })
     },
+    delAdmin (row, state) {
+      del_admin({ id: row.id }).then(res => {
+        this.$notify({
+          title: '成功',
+          message: '操作成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.getList()
+      })
+    },
     delUser (row, state) {
       open_free_admin({ id: row.id, is_free: state }).then(res => {
         this.$notify({
@@ -352,10 +369,11 @@ export default {
       })
     },
     createData () {
-      this.temp.area_id = this.temp.area_id[this.temp.area_id - 1]
+      // this.temp.area_id = this.temp.area_id[this.temp.area_id - 1]
       // this.temp = this.temp[2]
       add_admin(this.temp).then((res) => {
-        this.list.unshift(this.temp)
+        // this.list.unshift(this.temp)
+        this.getList()
         this.dialogFormVisible = false
         this.$notify({
           title: '成功',
@@ -376,16 +394,10 @@ export default {
       })
     },
     updateData () {
-      this.temp.area_id = this.temp.area_id[2]
+      // this.temp.area_id = this.temp.area_id[2]
       delete this.temp.username
       update_admin(this.temp).then(() => {
-        for (const v of this.list) {
-          if (v.id === this.temp.id) {
-            const index = this.list.indexOf(v)
-            this.list.splice(index, 1, this.temp)
-            break
-          }
-        }
+        this.getList()
         this.dialogFormVisible = false
         this.$notify({
           title: '成功',

@@ -6,7 +6,7 @@
 import echarts from 'echarts'
 require('echarts/theme/macarons') // echarts theme
 import resize from './mixins/resize'
-
+import { home } from "@/api/yunzhijia";
 const animationDuration = 6000
 
 export default {
@@ -25,17 +25,19 @@ export default {
       default: '300px'
     }
   },
-  data() {
+  data () {
     return {
-      chart: null
+      chart: null,
+      data: {}
     }
   },
-  mounted() {
-    this.$nextTick(() => {
-      this.initChart()
-    })
+  mounted () {
+
   },
-  beforeDestroy() {
+  created () {
+    this.getData()
+  },
+  beforeDestroy () {
     if (!this.chart) {
       return
     }
@@ -43,7 +45,13 @@ export default {
     this.chart = null
   },
   methods: {
-    initChart() {
+    getData () {
+      home().then(res => {
+        this.data = res.result
+        this.initChart()
+      })
+    },
+    initChart () {
       this.chart = echarts.init(this.$el, 'macarons')
 
       this.chart.setOption({
@@ -62,7 +70,7 @@ export default {
         },
         xAxis: [{
           type: 'category',
-          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          data: ['个人总数', '普通志愿者总数', '行政志愿者总数', '会员总数'],
           axisTick: {
             alignWithLabel: true
           }
@@ -78,21 +86,7 @@ export default {
           type: 'bar',
           stack: 'vistors',
           barWidth: '60%',
-          data: [79, 52, 200, 334, 390, 330, 220],
-          animationDuration
-        }, {
-          name: 'pageB',
-          type: 'bar',
-          stack: 'vistors',
-          barWidth: '60%',
-          data: [80, 52, 200, 334, 390, 330, 220],
-          animationDuration
-        }, {
-          name: 'pageC',
-          type: 'bar',
-          stack: 'vistors',
-          barWidth: '60%',
-          data: [30, 52, 200, 334, 390, 330, 220],
+          data: [this.data.user_type0_count, this.data.user_type1_count, this.data.user_type2_count, this.data.user_all_count],
           animationDuration
         }]
       })

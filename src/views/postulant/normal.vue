@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-23 15:47:06
+ * @Last Modified time: 2019-08-02 09:13:00
  */
 <template>
   <div class="app-container">
@@ -103,7 +103,9 @@
 
       <el-table-column label="最后登录时间" width="130px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.login_time | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span
+            v-if="scope.row.login_time"
+          >{{ scope.row.login_time | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
 
@@ -187,7 +189,7 @@ export default {
       listQuery: {
         p: 1,
         row: 20,
-        type: 0,
+        type: 1,
         name: undefined
       },
       calendarTypeOptions,

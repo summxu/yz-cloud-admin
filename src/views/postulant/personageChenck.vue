@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-24 11:43:40
+ * @Last Modified time: 2019-07-31 17:54:33
  */
 <template>
   <div class="app-container">
@@ -84,31 +84,33 @@
           <span>{{ scope.row.service_type_id.toString() }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="服务时长" min-width="100px" align="center">
+      <!-- <el-table-column label="服务时长" min-width="100px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.service_hour }} 小时</span>
         </template>
-      </el-table-column>
+      </el-table-column>-->
       <el-table-column label="活跃天数" min-width="100px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.login_statis }} 天</span>
         </template>
       </el-table-column>
-      <el-table-column label="所属团队" min-width="100px" align="center">
+      <el-table-column label="志愿者编号" min-width="100px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.team_name }}</span>
+          <span>{{ scope.row.volunteer_no }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="星级" class-name="status-col" width="150">
+      <!-- <el-table-column label="星级" class-name="status-col" width="150">
         <template slot-scope="{row}">
           <el-rate disabled v-model="row.start"></el-rate>
         </template>
-      </el-table-column>
+      </el-table-column>-->
 
       <el-table-column label="最后登录时间" width="130px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.login_time | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span
+            v-if="scope.row.login_time"
+          >{{ scope.row.login_time | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
 
@@ -121,7 +123,8 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
-          <el-button type="success" size="mini" @click="check_user(row)">审核</el-button>
+          <el-button type="success" size="mini" @click="check_user(row)">通过</el-button>
+          <el-button type="danger" size="mini" @click="reject(row)">拒绝</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -230,6 +233,19 @@ export default {
       }
       check_user(params).then(res => {
         this.$message.success(res.msg)
+        this.list = []
+        this.getList()
+      })
+    },
+    /* 审核用户 */
+    reject (row) {
+      let params = {
+        id: row.id,
+        is_society_vol: 0
+      }
+      check_user(params).then(res => {
+        this.$message.success(res.msg)
+        this.list = []
         this.getList()
       })
     },

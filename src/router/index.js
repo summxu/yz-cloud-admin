@@ -8,6 +8,20 @@ Vue.use(Router)
 
 export const constantRoutes = [
   {
+    path: '',
+    component: () => import('@/layout'),
+    redirect: '/dashboard',
+    meta: { title: '首页', icon: 'dashboard' },
+    children: [
+      {
+        path: '/dashboard',
+        component: () => import('@/views/dashboard/admin/index'),
+        name: 'dashboard',
+        meta: { title: '首页', affix: true }
+      }
+    ]
+  },
+  {
     path: '/redirect',
     component: () => import('@/layout'),
     hidden: true,
@@ -41,6 +55,7 @@ export const constantRoutes = [
 ]
 
 export const asyncRoutes = [
+
   {
     path: '',
     hidden: true,
@@ -83,18 +98,25 @@ export const asyncRoutes = [
     ]
   },
   {
-    path: '',
+    path: '/activity',
     component: () => import('@/layout'),
     hidden: true,
-    redirect: 'activity',
+    redirect: '/activity/activity',
     meta: { title: '活动需求', icon: 'peoples' },
     children: [
       {
-        path: '/activity',
-        component: () => import('@/views/activity/activity'),
+        path: '/activity/activity',
         hidden: true,
+        component: () => import('@/views/activity/activity'),
         name: 'activity',
-        meta: { title: '活动需求', affix: true }
+        meta: { title: '普通活动', affix: true }
+      },
+      {
+        path: '/activity/activity-site',
+        hidden: true,
+        component: () => import('@/views/activity/activitySite'),
+        name: 'activitySite',
+        meta: { title: '站内活动', affix: true }
       }
     ]
   },
@@ -103,14 +125,14 @@ export const asyncRoutes = [
     component: () => import('@/layout'),
     hidden: true,
     redirect: 'task',
-    meta: { title: '待处理任务', icon: 'message' },
+    meta: { title: '超时任务', icon: 'message' },
     children: [
       {
         path: '/task',
         component: () => import('@/views/task/task'),
         hidden: true,
         name: 'task',
-        meta: { title: '待处理任务', affix: true }
+        meta: { title: '超时任务', affix: true }
       }
     ]
   },
@@ -250,14 +272,20 @@ export const asyncRoutes = [
         component: () => import('@/views/system-manage/url'),
         hidden: true,
         name: 'url',
-        meta: { title: '快捷URL管理' }
+        meta: { title: '便民中心URL管理' }
       },
       {
         path: '/system-manage/url-classify',
         component: () => import('@/views/system-manage/url-classify'),
         hidden: true,
         name: 'url-classify',
-        meta: { title: '快捷URL分类管理' }
+        meta: { title: '便民中心URL分类管理' }
+      },
+      {
+        path: '/system-manage/repass',
+        component: () => import('@/views/system-manage/repass'),
+        name: 'repass',
+        meta: { title: '修改密码' }
       }
     ]
   }

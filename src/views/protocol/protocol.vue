@@ -53,17 +53,13 @@ personage/*
     >
       <el-table-column
         :label="$t('table.id')"
-        prop="id"
+        type="index"
         sortable="custom"
         align="center"
         width="80"
-      >
-        <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
-        </template>
-      </el-table-column>
+      ></el-table-column>
 
-      <el-table-column label="标题" width="150px" align="center">
+      <el-table-column label="标题" min-width="150px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.title }}</span>
         </template>
@@ -107,13 +103,7 @@ personage/*
       :title="textMap[dialogStatus]"
       :visible.sync="dialogFormVisible"
     >
-      <el-form
-        ref="dataForm"
-        :model="temp"
-        label-position="right"
-        label-width="120px"
-        style="width: 400px; margin-left:50px;"
-      >
+      <el-form ref="dataForm" :model="temp" label-position="right" label-width="120px">
         <el-form-item label="标题" prop="title">
           <el-input v-model="temp.title" />
         </el-form-item>
@@ -442,16 +432,21 @@ export default {
 /deep/.model .el-input__inner,
 /deep/.model .el-textarea__inner,
 /deep/.model .el-select .el-input__inner,
-/deep/.model .el-cascader .el-input__inner {
-  width: 600px;
-  // width: 100%;
+/deep/.model .el-cascader {
+  // width: 600px;
+  width: 100%;
+}
+.editor {
+  width: 100%;
+  height: 300px;
+  margin-bottom: 50px;
 }
 
 .fixed-width .el-button--mini {
   width: auto;
 }
 .editor {
-  width: 700px;
+  width: 100%;
   height: 400px;
   margin-bottom: 50px;
 }

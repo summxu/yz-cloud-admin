@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-25 14:08:50
+ * @Last Modified time: 2019-07-30 17:03:13
  */
 <template>
   <div class="app-container">
@@ -15,6 +15,18 @@
         class="filter-item"
         @keyup.enter.native="handleFilter"
       />
+
+      <el-select v-model="listQuery.type_id" class="filter-item" placeholder="选择服务类型">
+        <el-option v-for="item in types" :key="item.id" :label="item.type_name" :value="item.id" />
+      </el-select>
+      <el-select v-model="listQuery.status" class="filter-item" placeholder="选择审核状态">
+        <el-option
+          v-for="item in statuss"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        />
+      </el-select>
 
       <!-- 操作按钮 -->
       <el-button
@@ -106,7 +118,7 @@
       <!-- 添加 -->
 
       <!-- 操作 -->
-      <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="250" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button
             v-if="row.status == 1"
@@ -118,6 +130,7 @@
 
           <el-button v-if="!row.status" type="success" size="mini" @click="agree(row)">通过</el-button>
           <el-button v-if="!row.status" type="danger" size="mini" @click="reject(row)">拒绝</el-button>
+          <el-button type="danger" size="mini" @click="del_team(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -229,7 +242,7 @@
 </template>
 
 <script>
-import { volunteers_team, remove_xzmember, userIndex, team_member, token, need_type, cat, volunteers_team_check, addVal, add_xzteam, updateVal, delVal } from '@/api/yunzhijia'
+import { volunteers_team, remove_xzmember, del_team, userIndex, team_member, token, need_type, cat, volunteers_team_check, addVal, add_xzteam, updateVal, delVal } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -281,6 +294,27 @@ export default {
       upData1: {
         token: ''
       },
+
+      statuss: [{
+        value: '',
+        label: '全部'
+      }, {
+        value: 0,
+        label: '审核中'
+      },
+      {
+        value: 1,
+        label: '招募中'
+      }, {
+        value: 2,
+        label: '进行中'
+      }, {
+        value: 3,
+        label: '已完成'
+      }, {
+        value: 4,
+        label: '撤销'
+      }],
       upData: {
         admin_id: getAdminId()
       },
@@ -297,7 +331,9 @@ export default {
       listQuery: {
         p: 1,
         row: 20,
-        type: 2
+        type: 2,
+        status: '',
+        type_id: ''
       },
       calendarTypeOptions,
       statusOptions: ['published', 'draft', 'deleted'],
@@ -315,7 +351,21 @@ export default {
     this.getmemberList()
     this.getToken1()
   },
+  watch: {
+    'listQuery': {
+      handler (val) {
+        this.getList()
+      },
+      deep: true
+    }
+  },
   methods: {
+    del_team (row) {
+      del_team({ id: row.id }).then(res => {
+        this.$message.success(res.msg)
+        this.getList()
+      })
+    },
     editClose () {
       this.editShow = false
       this.getList()
@@ -356,7 +406,6 @@ export default {
     /* 添加支援者 */
     add () {
       this.team.type_id = this.team.type_id.toString()
-      console.log(this.team);
       add_xzteam(this.team).then(res => {
         this.getList()
         this.$message.success(res.msg)
@@ -387,6 +436,10 @@ export default {
     getNeedType () {
       need_type().then(res => {
         this.types = res.result
+        this.types.unshift({
+          type_name: '全部',
+          value: ''
+        })
       })
     },
     handleCreate () {
@@ -450,6 +503,7 @@ export default {
         this.listLoading = false
       }).catch(err => {
         this.listLoading = false
+        this.list = []
       })
     },
     handleFilter () {

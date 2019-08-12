@@ -3,8 +3,8 @@
     <el-button type="primary" @click="handleAddRole">{{ $t('permission.addRole') }}</el-button>
 
     <el-table :data="rolesList" style="width: 100%;margin-top:30px;" border>
-      <el-table-column align="center" label="角色ID" width="220">
-        <template slot-scope="scope">{{ scope.row.id }}</template>
+      <el-table-column align="center" type="index" label="角色ID" width="220">
+        <!-- <template slot-scope="scope">{{ scope.row.id }}</template> -->
       </el-table-column>
       <el-table-column align="center" label="角色名字">
         <template slot-scope="scope">{{ scope.row.title }}</template>
@@ -66,7 +66,7 @@ import path from 'path'
 import { deepClone } from '@/utils'
 /* 此处 getRoutes 就为正常路由 */
 import { getRoutes, addRole, deleteRole, updateRole } from '@/api/role'
-import { roleIndex, edit_role } from "@/api/yunzhijia";
+import { roleIndex, edit_role, del_role } from "@/api/yunzhijia";
 import { asyncRoutes, constantRoutes } from '@/router'
 import i18n from '@/lang'
 
@@ -105,14 +105,13 @@ export default {
   methods: {
     getRoutes () {
       // const res = await getRoutes()
-
       // this.serviceRoutes = res.data
       // const routes = this.generateRoutes(res.data)
 
       this.serviceRoutes = asyncRoutes
       const routes = this.generateRoutes(asyncRoutes)
-
       this.routes = routes
+      console.log(this.routes);
     },
     getRoles () {
       let params = {
@@ -185,7 +184,7 @@ export default {
     handleEdit (scope) {
       this.dialogType = 'edit'
       this.dialogVisible = true
-      this.checkStrictly = true
+      this.checkStrictly = false
       this.role = scope.row
 
       this.$nextTick(() => {
@@ -194,7 +193,6 @@ export default {
         // console.log(routes);
         // console.log(this.generateArr(routes));
         let arr = this.role.content.split(',')
-        console.log(arr);
         this.$refs.tree.setCheckedKeys(arr)
         // this.$refs.tree.setCheckedNodes(this.generateArr(routes))
         // // set checked state of a node not affects its father and child nodes
@@ -202,20 +200,13 @@ export default {
       })
     },
     handleDelete ({ $index, row }) {
-      this.$confirm('Confirm to remove the role?', 'Warning', {
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
-        type: 'warning'
-      })
-        .then(async () => {
-          await deleteRole(row.key)
-          this.rolesList.splice($index, 1)
-          this.$message({
-            type: 'success',
-            message: 'Delete succed!'
-          })
+      del_role({ id: row.id }).then(res => {
+        this.getRoles()
+        this.$message({
+          type: 'success',
+          message: 'Delete succed!'
         })
-        .catch(err => { console.error(err) })
+      })
     },
     generateTree (routes, basePath = '/postulant', checkedKeys) {
       const res = []
@@ -250,20 +241,25 @@ export default {
           }
         }
       } else {
-        const { data } = await addRole(this.role)
-        this.role.key = data.key
-        this.rolesList.push(this.role)
+        const { data } = await edit_role({ content: checkedKeys.toString(), title: this.role.title })
+        for (let index = 0; index < this.rolesList.length; index++) {
+          if (this.rolesList[index].key === this.role.key) {
+            this.rolesList.splice(index, 1, Object.assign({}, this.role))
+            break
+          }
+        }
+        // this.role.key = data.key
+        // this.rolesList.push(this.role)
       }
 
+      this.getRoles()
       const { description, key, name } = this.role
       this.dialogVisible = false
       this.$notify({
         title: 'Success',
         dangerouslyUseHTMLString: true,
         message: `
-            <div>Role Key: ${key}</div>
-            <div>Role Nmae: ${name}</div>
-            <div>Description: ${description}</div>
+            
           `,
         type: 'success'
       })

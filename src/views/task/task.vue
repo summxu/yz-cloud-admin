@@ -2,10 +2,66 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-25 18:45:46
+ * @Last Modified time: 2019-08-03 15:41:48
  */
 <template>
   <div class="app-container">
+    <div class="filter-container">
+      <!-- 条件查询 -->
+      <el-input
+        v-model="listQuery.name"
+        placeholder="查询需求名称"
+        style="width: 300px;"
+        class="filter-item"
+        @keyup.enter.native="handleFilter"
+      />
+      <el-select v-model="listQuery.need_type_id" class="filter-item" placeholder="选择服务类型">
+        <el-option v-for="item in types" :key="item.id" :label="item.type_name" :value="item.id" />
+      </el-select>
+      <el-select v-model="listQuery.status" class="filter-item" placeholder="选择审核状态">
+        <el-option
+          v-for="item in statuss"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        />
+      </el-select>
+      <el-select v-model="listQuery.is_top" class="filter-item" placeholder="置顶状态">
+        <el-option v-for="item in tops" :key="item.value" :label="item.label" :value="item.value" />
+      </el-select>
+      <el-select v-model="listQuery.has_reward" class="filter-item" placeholder="奖励状态">
+        <el-option
+          v-for="item in reward"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        />
+      </el-select>
+
+      <!-- 操作按钮 -->
+      <el-button
+        v-waves
+        class="filter-item"
+        type="primary"
+        icon="el-icon-search"
+        @click="handleFilter"
+      >{{ $t('table.search') }}</el-button>
+      <!-- <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-edit"
+        @click="centerDialogVisible = true"
+      >{{ $t('table.add') }}</el-button>-->
+      <el-button
+        v-waves
+        :loading="downloadLoading"
+        class="filter-item"
+        type="primary"
+        icon="el-icon-download"
+        @click="handleDownload"
+      >{{ $t('table.export') }}</el-button>
+    </div>
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -141,7 +197,13 @@
       @pagination="getList"
     />
 
-    <el-dialog :visible.sync="centerDialogVisible" :before-close="close" width="55%" center>
+    <el-dialog
+      top="7vh"
+      :visible.sync="centerDialogVisible"
+      :before-close="close"
+      width="55%"
+      center
+    >
       <out-modal @close="close" :show="show" :id="rowId"></out-modal>
     </el-dialog>
 
@@ -161,7 +223,7 @@
 </template>
 
 <script>
-import { task, check_need, need_member, ce_need, com_task, need_top } from '@/api/yunzhijia'
+import { task, check_need, need_type, need_member, ce_need, com_task, need_top } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -196,8 +258,17 @@ export default {
       return calendarTypeKeyValue[type]
     }
   },
+  watch: {
+    'listQuery': {
+      handler (val) {
+        this.getList()
+      },
+      deep: true
+    }
+  },
   data () {
     return {
+      types: [],
       feedContent: [],
       numbers: [],
       dialogFormVisible: false,
@@ -206,9 +277,55 @@ export default {
       total: 0,
       listLoading: true,
       numberLoading: true,
+      statuss: [{
+        value: '',
+        label: '全部'
+      }, {
+        value: 0,
+        label: '审核中'
+      },
+      {
+        value: 1,
+        label: '招募中'
+      }, {
+        value: 2,
+        label: '进行中'
+      }, {
+        value: 3,
+        label: '已完成'
+      }, {
+        value: 4,
+        label: '撤销'
+      }],
+      tops: [{
+        value: '',
+        label: '全部'
+      }, {
+        value: 1,
+        label: '置顶'
+      },
+      {
+        value: 0,
+        label: '未置顶'
+      }],
+      reward: [{
+        value: '',
+        label: '全部'
+      }, {
+        value: 1,
+        label: '已奖励'
+      },
+      {
+        value: 0,
+        label: '未奖励'
+      }],
       listQuery: {
         p: 1,
-        row: 20
+        row: 20,
+        need_type_id: '',
+        status: '',
+        has_reward: '',
+        is_top: ''
       },
       rowId: '',
       calendarTypeOptions,
@@ -223,8 +340,18 @@ export default {
   },
   created () {
     this.getList()
+    this.getNeedType()
   },
   methods: {
+    getNeedType () {
+      need_type().then(res => {
+        this.types = res.result
+        this.types.unshift({
+          type_name: '全部',
+          value: ''
+        })
+      })
+    },
     /* 打开编辑窗口 */
     handEdit (row) {
       this.rowId = row.id
@@ -294,6 +421,7 @@ export default {
         this.listLoading = false
       }).catch(err => {
         this.listLoading = false
+        this.list = []
       })
     },
     handleFilter () {

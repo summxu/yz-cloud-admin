@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-17 09:47:55
+ * @Last Modified time: 2019-08-05 10:35:40
  */
 <template>
   <div class="app-container">
@@ -344,8 +344,8 @@ export default {
     },
     createData () {
       addVal(this.temp).then((res) => {
-        this.list.unshift(this.temp)
         this.dialogFormVisible = false
+        this.getList()
         this.$notify({
           title: '成功',
           message: '创建成功',
@@ -368,14 +368,9 @@ export default {
     },
     updateData () {
       updateVal(this.temp).then(() => {
-        for (const v of this.list) {
-          if (v.id === this.temp.id) {
-            const index = this.list.indexOf(v)
-            this.list.splice(index, 1, this.temp)
-            break
-          }
-        }
+
         this.dialogFormVisible = false
+        this.getList()
         this.$notify({
           title: '成功',
           message: '更新成功',

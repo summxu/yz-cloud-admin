@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 17:00:12 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-25 16:11:56
+ * @Last Modified time: 2019-08-02 09:57:59
  */
 import request from '@/utils/request'
 
@@ -115,7 +115,6 @@ export function admin_log (data) {
 
 /* 快捷url */
 export function getVal (data) {
-  console.log(data);
   return request({
     url: '/admin/fast_url/val',
     method: 'get',
@@ -319,10 +318,27 @@ export function open_free_admin (data) {
   })
 }
 
+export function del_admin (data) {
+  return request({
+    url: '/admin/User/del_admin',
+    method: 'post',
+    data
+  })
+}
+
 
 export function roleIndex (data) {
   return request({
     url: '/admin/User/roleIndex',
+    method: 'get',
+    params: data
+  })
+}
+
+
+export function del_role (data) {
+  return request({
+    url: '/admin/User/del_role',
     method: 'get',
     params: data
   })
@@ -390,6 +406,14 @@ export function edit_agreement (data) {
 export function update_user (data) {
   return request({
     url: '/admin/User/update_user',
+    method: 'post',
+    data
+  })
+}
+
+export function update_pwd (data) {
+  return request({
+    url: '/admin/User/update_pwd',
     method: 'post',
     data
   })
@@ -473,6 +497,23 @@ export function need_detail (data) {
 export function need_info (data) {
   return request({
     url: '/admin/Need/need_info',
+    method: 'post',
+    data
+  })
+}
+
+export function home (data) {
+  return request({
+    url: '/admin/Index/home',
+    method: 'post',
+    data
+  })
+}
+
+/* 自愿者团队 删除 */
+export function del_team (data) {
+  return request({
+    url: '/admin/volunteers/del_team',
     method: 'post',
     data
   })

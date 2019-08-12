@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-08-05 11:28:19
+ * @Last Modified time: 2019-08-05 11:29:36
  */
 <template>
   <div class="app-container">
@@ -289,7 +289,7 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 }, {})
 
 export default {
-  name: 'activitySite',
+  name: 'activity',
   components: { Pagination, outModal },
   directives: { waves },
   filters: {
@@ -376,7 +376,7 @@ export default {
         status: '',
         has_reward: '',
         is_top: '',
-        from: 1
+        from: 2
       },
       calendarTypeOptions,
       statusOptions: ['published', 'draft', 'deleted'],

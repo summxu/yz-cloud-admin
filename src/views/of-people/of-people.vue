@@ -41,15 +41,11 @@
     >
       <el-table-column
         :label="$t('table.id')"
-        prop="id"
+        type="index"
         sortable="custom"
         align="center"
         width="80"
-      >
-        <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
-        </template>
-      </el-table-column>
+      ></el-table-column>
 
       <el-table-column label="发布需求人姓名：电话" width="150px" align="center">
         <template slot-scope="scope">

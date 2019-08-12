@@ -2,7 +2,7 @@
  * @Author: Chenxu 
  * @Date: 2019-07-04 13:59:59 
  * @Last Modified by: Chenxu
- * @Last Modified time: 2019-07-24 10:33:13
+ * @Last Modified time: 2019-08-02 10:48:30
  */
 <template>
   <div class="app-container">
@@ -10,11 +10,15 @@
       <!-- 条件查询 -->
       <el-input
         v-model="listQuery.name"
-        placeholder="请输入查询条件"
+        placeholder="可查询姓名和手机号"
         style="width: 300px;"
         class="filter-item"
         @keyup.enter.native="handleFilter"
       />
+
+      <el-select v-model="listQuery.service_type_id" class="filter-item" placeholder="选择服务类型">
+        <el-option v-for="item in types" :key="item.id" :label="item.type_name" :value="item.id" />
+      </el-select>
 
       <!-- 操作按钮 -->
       <el-button
@@ -108,7 +112,9 @@
 
       <el-table-column label="最后登录时间" width="130px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.login_time | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span
+            v-if="scope.row.login_time"
+          >{{ scope.row.login_time | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
 
@@ -117,11 +123,11 @@
       <!-- <el-table-column
         :label="$t('table.actions')"
         align="center"
-        width="0"
+        width="80"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)">变为行政</el-button>
         </template>
       </el-table-column>-->
     </el-table>
@@ -148,7 +154,7 @@
 </template>
 
 <script>
-import { userIndex } from '@/api/yunzhijia'
+import { userIndex, update_user, need_type } from '@/api/yunzhijia'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -185,15 +191,18 @@ export default {
   },
   data () {
     return {
+
       tableKey: 0,
       list: null,
       total: 0,
       listLoading: true,
+      types: [],
       listQuery: {
         p: 1,
         row: 20,
-        type: 1,
-        name: undefined
+        type: 0,
+        name: undefined,
+        service_type_id: '',
       },
       calendarTypeOptions,
       statusOptions: ['published', 'draft', 'deleted'],
@@ -220,8 +229,38 @@ export default {
   },
   created () {
     this.getList()
+    this.getNeedType()
+  },
+  watch: {
+    'listQuery.service_type_id' (val) {
+      this.listQuery.service_type_id = val
+      this.getList()
+    }
   },
   methods: {
+    /* 升级行政 */
+    handleUpdate (row) {
+      let params = {
+        id: row.id,
+        is_society_vol: 1,
+        type: 2,
+        volunteer_no: row.volunteer_no,
+        service_type_id: row.service_type_id
+      }
+      update_user(params).then(res => {
+        this.$message.success(res.msg)
+        this.getList()
+      })
+    },
+    getNeedType () {
+      need_type().then(res => {
+        this.types = res.result
+        this.types.unshift({
+          type_name: '全部',
+          value: ''
+        })
+      })
+    },
     getList () {
       this.listLoading = true
       userIndex(this.listQuery).then(response => {
@@ -230,6 +269,8 @@ export default {
         this.listLoading = false
       }).catch(err => {
         this.listLoading = false
+        this.list = []
+
       })
     },
     handleFilter () {
@@ -323,4 +364,7 @@ export default {
 </script>
 
 <style scoped>
+.fixed-width .el-button--mini {
+  width: auto;
+}
 </style>

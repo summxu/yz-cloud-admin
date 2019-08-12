@@ -65,7 +65,7 @@
       </div>
       <div class="modal-time">
         <div class="aTitle">需求详情</div>
-        <el-input type="detail" v-model="detail" placeholder="请输入需求详情"></el-input>
+        <el-input type="textarea" rows="5" v-model="detail" placeholder="请输入需求详情"></el-input>
       </div>
       <div class="modal-time">
         <div class="aTitle">详细地址</div>
@@ -363,7 +363,8 @@ export default {
     }
   }
   .modal-time {
-    height: 70px;
+    // height: 70px;
+    margin: 30px 0;
     display: flex;
     flex-direction: row;
     align-items: center;

@@ -65,6 +65,10 @@ const mutations = {
   SET_ROUTES: (state, routes) => {
     state.addRoutes = routes
     state.routes = constantRoutes.concat(routes)
+  },
+  CLEAR_ROUTES: (state) => {
+    state.addRoutes = []
+    state.routes = []
   }
 }
 
@@ -80,9 +84,12 @@ const actions = {
       if (roles.includes('admin')) {
         accessedRoutes = asyncRoutes || []
       } else {
-        console.log(asyncRoutes);
         accessedRoutes = filterAsyncRoutes(asyncRoutes, roles)
       }
+
+      /* QINGKONG */
+      commit('CLEAR_ROUTES')
+
       commit('SET_ROUTES', accessedRoutes)
       resolve(accessedRoutes)
     })
